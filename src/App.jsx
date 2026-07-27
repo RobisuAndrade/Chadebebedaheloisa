@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { MapPin, Navigation, Calendar, CheckCircle2, Cloud, Heart, Star, Moon, Users } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, Cloud, Heart, Star, Moon, Users } from 'lucide-react';
 
-// Importando os componentes modais (mantenha os arquivos que criamos antes!)
+// Importando os componentes modais (mantenha os arquivos na pasta components!)
 import AcompanhantesModal from './components/AcompanhantesModal';
 import PresentesModal from './components/PresentesModal';
 import SucessoModal from './components/SucessoModal';
@@ -30,7 +30,35 @@ function App() {
     <div className="min-h-screen flex flex-col items-center py-8 font-sans bg-gradient-to-b from-[#f3e8ff] via-[#e0e7ff] to-[#dbeafe] relative overflow-x-hidden">
       
       {/* ========================================================= */}
-      {/* NUVENS SÓLIDAS DO FUNDO (MAIS NUVENS ADICIONADAS) */}
+      {/* CSS PERSONALIZADO (MODO CLARO E ANIMAÇÕES) */}
+      {/* ========================================================= */}
+      <style dangerouslySetInnerHTML={{__html: `
+        /* Trava o site no modo claro */
+        :root {
+          color-scheme: light only !important;
+        }
+        
+        /* Animação suave imitando a respiração do bebê */
+        @keyframes breathe {
+          0%, 100% { transform: scale(1) translateY(0); }
+          50% { transform: scale(1.04) translateY(-3px); }
+        }
+        .animate-breathe {
+          animation: breathe 3.5s ease-in-out infinite;
+        }
+
+        /* Animação saltitante suave para o botão de presentes */
+        @keyframes gentle-bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        .animate-gentle-bounce {
+          animation: gentle-bounce 2s infinite ease-in-out;
+        }
+      `}} />
+
+      {/* ========================================================= */}
+      {/* NUVENS SÓLIDAS DO FUNDO */}
       {/* ========================================================= */}
       <div className="absolute inset-0 pointer-events-none z-0 flex justify-center overflow-hidden">
         <div className="relative w-full max-w-2xl h-full">
@@ -48,12 +76,19 @@ function App() {
         {/* ========================================================= */}
         {/* NUVEM BRANCA PRINCIPAL (CONTEÚDO) */}
         {/* ========================================================= */}
-        <div className="w-full max-w-md relative z-10 mt-28 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] mb-12">
+        <div className="w-full max-w-md relative z-10 mt-28 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] mb-12" style={{ backgroundColor: 'transparent' }}>
           
-          {/* ELEMENTOS DECORATIVOS ESPALHADOS EM VOLTA DA NUVEM */}
+          {/* ========================================================= */}
+          {/* ELEMENTOS DECORATIVOS ESPALHADOS (ESTRELAS, LUA E CORAÇÕES) */}
+          {/* ========================================================= */}
           <Star className="absolute -top-20 left-0 text-yellow-400 w-8 h-8 animate-pulse z-0 drop-shadow-sm" fill="#facc15" />
           <Star className="absolute top-1/4 -right-6 text-yellow-400 w-6 h-6 animate-pulse z-0 drop-shadow-sm delay-75" fill="#facc15" />
           <Star className="absolute bottom-1/3 -left-6 text-yellow-400 w-5 h-5 animate-pulse z-0 drop-shadow-sm delay-150" fill="#facc15" />
+          
+          <Star className="absolute top-10 -left-12 text-yellow-300 w-4 h-4 animate-pulse z-0 opacity-70 delay-300" fill="#fde047" />
+          <Star className="absolute top-2/3 -right-10 text-yellow-300 w-5 h-5 animate-pulse z-0 opacity-60 delay-500" fill="#fde047" />
+          <Star className="absolute -bottom-6 right-16 text-yellow-300 w-3 h-3 animate-pulse z-0 opacity-80 delay-700" fill="#fde047" />
+          <Star className="absolute top-1/2 left-2 text-yellow-200 w-3 h-3 animate-pulse z-20 opacity-80" fill="#fef08a" />
           
           <Moon className="absolute -top-16 -right-2 text-purple-300 w-12 h-12 z-0 drop-shadow-sm transform rotate-12" fill="#d8b4fe" />
           
@@ -61,33 +96,41 @@ function App() {
           <Heart className="absolute top-2/3 -right-4 text-purple-300 w-6 h-6 animate-bounce z-20 drop-shadow-sm delay-150" fill="#d8b4fe" />
           <Heart className="absolute -bottom-10 left-10 text-purple-300 w-8 h-8 animate-bounce z-20 drop-shadow-sm delay-75" fill="#d8b4fe" />
 
-          {/* CÍRCULOS QUE FORMAM A NOVA NUVEM FOFINHA */}
-          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-white rounded-full z-10"></div>
-          <div className="absolute -top-4 -left-1 w-36 h-36 bg-white rounded-full z-10"></div>
-          <div className="absolute -top-6 -right-1 w-40 h-40 bg-white rounded-full z-10"></div>
-          
-          <div className="absolute top-24 -left-5 w-32 h-32 bg-white rounded-full z-10"></div>
-          <div className="absolute top-32 -right-5 w-36 h-36 bg-white rounded-full z-10"></div>
-          
-          <div className="absolute bottom-32 -left-5 w-36 h-36 bg-white rounded-full z-10"></div>
-          <div className="absolute bottom-24 -right-5 w-32 h-32 bg-white rounded-full z-10"></div>
+          <Heart className="absolute top-0 -right-8 text-pink-300 w-4 h-4 animate-bounce z-20 opacity-70 delay-300" fill="#f9a8d4" />
+          <Heart className="absolute bottom-1/4 -left-10 text-fuchsia-300 w-5 h-5 animate-bounce z-20 opacity-60 delay-500" fill="#f0abfc" />
+          <Heart className="absolute -top-6 left-1/4 text-purple-200 w-3 h-3 animate-bounce z-20 opacity-80 delay-1000" fill="#e9d5ff" />
 
-          <div className="absolute -bottom-10 left-4 w-40 h-40 bg-white rounded-full z-10"></div>
-          <div className="absolute -bottom-8 right-4 w-36 h-36 bg-white rounded-full z-10"></div>
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-white rounded-full z-10"></div>
+          {/* DECORAÇÕES PARA PREENCHER A LATERAL DIREITA */}
+          <Star className="absolute top-[40%] -right-14 text-yellow-300 w-6 h-6 animate-pulse z-0 opacity-80 delay-200" fill="#fde047" />
+          <Star className="absolute top-[60%] -right-8 text-yellow-400 w-4 h-4 animate-pulse z-0 opacity-90 delay-500" fill="#facc15" />
+          <Moon className="absolute top-[45%] -right-10 text-purple-200 w-8 h-8 z-0 drop-shadow-sm transform -rotate-12 opacity-70" fill="#e9d5ff" />
+          <Heart className="absolute top-[35%] -right-10 text-pink-300 w-5 h-5 animate-bounce z-20 opacity-80 delay-700" fill="#f9a8d4" />
+          <Heart className="absolute bottom-[20%] -right-12 text-purple-300 w-6 h-6 animate-bounce z-20 drop-shadow-sm delay-300" fill="#d8b4fe" />
+
+          {/* CÍRCULOS QUE FORMAM A NUVEM FOFINHA */}
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute -top-4 -left-1 w-36 h-36 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute -top-6 -right-1 w-40 h-40 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          
+          <div className="absolute top-24 -left-5 w-32 h-32 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute top-32 -right-5 w-36 h-36 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          
+          <div className="absolute bottom-32 -left-5 w-36 h-36 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute bottom-24 -right-5 w-32 h-32 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+
+          <div className="absolute -bottom-10 left-4 w-40 h-40 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute -bottom-8 right-4 w-36 h-36 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
+          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-white rounded-full z-10" style={{ backgroundColor: '#ffffff' }}></div>
 
           {/* CONTEÚDO DENTRO DA NUVEM */}
-          <div className="bg-white rounded-[3.5rem] p-6 sm:p-8 relative z-20 flex flex-col gap-8 pt-20 pb-12">
+          <div className="bg-white rounded-[3.5rem] p-6 sm:p-8 relative z-20 flex flex-col gap-7 pt-20 pb-12" style={{ backgroundColor: '#ffffff' }}>
             
             {/* TÍTULO E BEBÊ */}
             <section className="relative flex flex-col items-center w-full">
-              
-              {/* Bebê dormindo posicionado bem no topo da nuvem */}
               <div className="absolute -top-36 left-1/2 transform -translate-x-1/2 z-30">
-                <img src="/bebe-dormindo.png" alt="Bebê Dormindo" className="w-32 h-32 drop-shadow-xl" />
+                <img src="/bebe-dormindo.png" alt="Bebê Dormindo" className="w-32 h-32 drop-shadow-xl animate-breathe" />
               </div>
               
-              {/* Fitas decorativas laterais */}
               <div className="absolute top-1/2 -left-3 w-10 h-16 bg-purple-400 skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
               <div className="absolute top-1/2 -right-3 w-10 h-16 bg-purple-400 -skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
               
@@ -108,30 +151,28 @@ function App() {
               </div>
             </section>
 
-            {/* LISTA DE PRESENTES */}
-            <section className="flex justify-center relative z-20 w-full py-1">
-              <button 
-                onClick={() => setModalPresenteAberto(true)}
-                className="flex items-center gap-3 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 py-2 px-6 rounded-xl shadow-sm transition-all transform hover:scale-105 w-auto"
-              >
-                <img src="/image_838a75.png" alt="Caixa de Presente" className="w-10 h-10 animate-pulse" />
-                <div className="text-left">
-                  <p className="text-yellow-800 font-bold text-sm leading-tight uppercase tracking-wide">Lista de Presentes</p>
-                  <p className="text-yellow-600 text-[9px] font-medium mt-0.5">Toque para ver sugestões</p>
-                </div>
-              </button>
+            {/* MENSAGEM CURTA PARA OS CONVIDADOS */}
+            <section className="text-center px-2 relative z-20 w-full mt-1">
+              <p className="text-gray-600 font-medium text-[15px] leading-relaxed">
+                Estou chegando para encher nossos corações de alegria! Minha família está preparando tudo com muito carinho e adoraríamos celebrar esse momento com você. 💜
+              </p>
             </section>
 
-            {/* CONFIRMAÇÃO E MAPAS */}
+            {/* SESSÃO PRINCIPAL DE AÇÕES (CONFIRMAÇÃO + PRESENTES + MAPA) */}
             <section className="flex flex-col gap-8 w-full relative z-20">
+              
+              {/* BLOCO DE CONFIRMAÇÃO DE PRESENÇA */}
               <div className="bg-purple-200 p-1 rounded-[2rem] shadow-sm">
-                <div className="bg-white p-6 rounded-[1.7rem] relative">
+                <div className="bg-white p-6 rounded-[1.7rem] relative" style={{ backgroundColor: '#ffffff' }}>
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-extrabold uppercase tracking-widest py-1.5 px-6 rounded-full shadow-md border-2 border-white whitespace-nowrap">
                     Sua Presença
                   </div>
-                  <h3 className="text-2xl font-extrabold text-center text-purple-800 mb-2 mt-3">Você vai?</h3>
-                  <p className="text-center text-sm text-gray-500 mb-6 font-medium">
-                    Por favor, confirme para organizarmos tudo com carinho.
+                  
+                  <h3 className="text-2xl font-extrabold text-center text-purple-800 mb-1 mt-4">Você vai?</h3>
+                  
+                  {/* TEXTO VOLTOU PARA CIMA, COM A NOVA ESTILIZAÇÃO MENOR */}
+                  <p className="text-center text-[11px] text-gray-400 font-medium mb-5 mt-1">
+                    Por favor, confirme para organizarmos tudo com carinho 💜
                   </p>
                   
                   {confirmado ? (
@@ -141,29 +182,35 @@ function App() {
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                      <div className="flex gap-2 w-full items-end">
-                        <div className="flex flex-col gap-1 flex-1">
-                          <label htmlFor="nome_convidado" className="text-[10px] font-bold text-purple-600 uppercase ml-2">Nome Completo</label>
+                      
+                      <div className="flex flex-col gap-3 w-full">
+                        
+                        {/* 1. Nome Completo */}
+                        <div className="flex flex-col gap-1.5 w-full">
+                          <label htmlFor="nome_convidado" className="text-[11px] font-extrabold text-purple-700 uppercase ml-2 tracking-wide">
+                            Seu Nome Completo
+                          </label>
                           <input 
-                            id="nome_convidado" type="text" placeholder="Seu nome" required
-                            className="p-3 border border-purple-100 rounded-2xl focus:outline-none focus:border-purple-300 focus:ring-4 focus:ring-purple-100 bg-purple-50/30 shadow-inner text-gray-700 font-semibold placeholder-gray-400 w-full h-[50px]"
+                            id="nome_convidado" type="text" placeholder="Digite seu nome aqui" required
+                            className="p-4 border-2 border-purple-200 rounded-2xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 bg-purple-50/20 shadow-inner text-gray-800 font-bold placeholder-gray-400 w-full text-base transition-colors"
                             value={nome} onChange={(e) => setNome(e.target.value)}
                           />
                         </div>
+                        
+                        {/* 2. Botão de Acompanhantes (Ocupando a largura toda) */}
                         <button
                           type="button" onClick={() => setModalAcompanhantesAberto(true)}
-                          className="h-[50px] px-2 border border-purple-100 rounded-2xl focus:outline-none focus:border-purple-300 focus:ring-4 focus:ring-purple-100 bg-purple-50/30 shadow-inner text-purple-700 font-bold flex flex-col items-center justify-center transition-colors hover:bg-purple-100/50 relative w-24 shrink-0"
+                          className="w-full py-3.5 bg-purple-50/40 border-2 border-dashed border-purple-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 shadow-sm text-purple-700 font-bold flex items-center justify-center transition-colors hover:bg-purple-100/50"
                         >
-                          <Users className="w-5 h-5 mb-0.5" />
-                          <span className="text-[9px] uppercase tracking-wider">Acompanhante</span>
-                          {acompanhantes !== '0' && (
-                            <span className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white shadow-sm">
-                              {acompanhantes}
-                            </span>
-                          )}
+                          <Users className="w-5 h-5 mr-2" />
+                          <span className="text-[11px] uppercase tracking-wider">
+                            {acompanhantes === '0' ? 'Adicionar Acompanhante' : `${acompanhantes} Acompanhante(s) Adicionado(s)`}
+                          </span>
                         </button>
+
                       </div>
-                      <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white font-extrabold py-4 px-4 rounded-2xl transition-colors shadow-md text-lg mt-2">
+                      
+                      <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white font-extrabold py-4 px-4 rounded-2xl transition-colors shadow-md text-lg mt-1">
                         Confirmar Agora
                       </button>
                     </form>
@@ -171,15 +218,47 @@ function App() {
                 </div>
               </div>
 
+              {/* LISTA DE PRESENTES EMBAIXO DA CONFIRMAÇÃO */}
+              <div className="flex justify-center w-full">
+                <div className="animate-gentle-bounce">
+                  <button 
+                    onClick={() => setModalPresenteAberto(true)}
+                    className="flex items-center gap-3 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 py-2 px-6 rounded-xl shadow-sm transition-transform hover:scale-105 w-auto"
+                  >
+                    <img src="/image_838a75.png" alt="Caixa de Presente" className="w-10 h-10 animate-pulse" />
+                    <div className="text-left">
+                      <p className="text-yellow-800 font-bold text-sm leading-tight uppercase tracking-wide">Lista de Presentes</p>
+                      <p className="text-yellow-600 text-[9px] font-medium mt-0.5">Toque para ver sugestões</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <hr className="border-purple-100 border-t-2 border-dashed w-3/4 mx-auto" />
 
-              <div className="bg-blue-50/70 rounded-3xl p-6 border border-blue-100 flex flex-col items-center">
-                <MapPin className="w-8 h-8 text-blue-500 mb-2" fill="#bfdbfe" />
-                <h3 className="font-bold text-blue-900 text-lg mb-1">Chácara Juromari</h3>
-                <p className="text-xs text-blue-600 mb-5 text-center font-medium">Toque para traçar a rota até o local da festa:</p>
-                <div className="flex flex-col sm:flex-row gap-3 w-full">
-                  <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-blue-200 text-blue-700 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors shadow-sm"><MapPin className="w-5 h-5" />Maps</a>
-                  <a href={wazeUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-cyan-200 text-cyan-700 font-bold py-3 rounded-xl hover:bg-cyan-50 transition-colors shadow-sm"><Navigation className="w-5 h-5" />Waze</a>
+              {/* SESSÃO DO ENDEREÇO */}
+              <div className="flex flex-col items-center">
+                <h2 className="text-purple-800 font-extrabold uppercase tracking-widest text-xl mb-3 flex items-center gap-2">
+                  <MapPin className="w-6 h-6 text-purple-600" />
+                  Endereço
+                </h2>
+                
+                <div className="bg-blue-50/70 rounded-3xl p-6 border border-blue-100 flex flex-col items-center w-full">
+                  <h3 className="font-bold text-blue-900 text-lg mb-1">Chácara Juromari</h3>
+                  <p className="text-xs text-blue-600 mb-5 text-center font-medium">Toque para traçar a rota até o local da festa:</p>
+                  
+                  {/* BOTÕES COM OS ÍCONES PERSONALIZADOS */}
+                  <div className="flex flex-col sm:flex-row gap-3 w-full">
+                    <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-blue-200 text-blue-700 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors shadow-sm">
+                      <img src="/google-maps.png" alt="Google Maps" className="w-5 h-5" />
+                      Maps
+                    </a>
+                    <a href={wazeUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-cyan-200 text-cyan-700 font-bold py-3 rounded-xl hover:bg-cyan-50 transition-colors shadow-sm">
+                      <img src="/waze.png" alt="Waze" className="w-5 h-5" />
+                      Waze
+                    </a>
+                  </div>
+                  
                 </div>
               </div>
             </section>
