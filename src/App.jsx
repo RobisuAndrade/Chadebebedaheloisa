@@ -61,10 +61,10 @@ END:VCALENDAR`;
     <div className="min-h-screen flex flex-col items-center py-8 font-sans bg-gradient-to-b from-[#f3e8ff] via-[#e0e7ff] to-[#dbeafe] relative overflow-x-hidden">
       
       {/* ========================================================= */}
-      {/* CADEADO ESCONDIDO PARA OS PAIS (AGORA FIXO NO TOPO) */}
+      {/* CADEADO ESCONDIDO PARA OS PAIS (AGORA ABSOLUTO NO TOPO) */}
       {/* ========================================================= */}
       <div 
-        className="fixed top-4 left-4 z-[60] opacity-30 hover:opacity-100 cursor-pointer p-2 transition-opacity"
+        className="absolute top-4 left-4 z-[60] opacity-30 hover:opacity-100 cursor-pointer p-2 transition-opacity"
         onClick={() => setModalAdminAberto(true)}
       >
         <Lock className="w-6 h-6 text-purple-900 drop-shadow-sm" />
@@ -153,14 +153,14 @@ END:VCALENDAR`;
           <div className="rounded-[3.5rem] p-6 sm:p-8 relative z-20 flex flex-col gap-7 pt-20 pb-12 force-white text-gray-800">
             
             <section className="relative flex flex-col items-center w-full">
-              <div className="absolute -top-36 left-1/2 transform -translate-x-1/2 z-30">
+              <div className="absolute -top-28 left-1/2 transform -translate-x-1/2 z-30">
                 <img src="/bebe-dormindo.png" alt="Bebê Dormindo" className="w-32 h-32 drop-shadow-xl animate-breathe" />
               </div>
               
               <div className="absolute top-1/2 -left-3 w-10 h-16 bg-purple-400 skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
               <div className="absolute top-1/2 -right-3 w-10 h-16 bg-purple-400 -skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
               
-              <div className="relative bg-gradient-to-b from-purple-50 to-fuchsia-50 border-2 border-purple-200 pt-10 pb-6 px-4 rounded-3xl shadow-sm z-10 flex flex-col items-center w-full mt-4">
+              <div className="relative bg-gradient-to-b from-purple-50 to-fuchsia-50 border-2 border-purple-200 pt-6 pb-6 px-4 rounded-3xl shadow-sm z-10 flex flex-col items-center w-full">
                 <h2 className="text-xs font-bold text-purple-500 uppercase tracking-widest mb-1">
                   Chá de Bebê da
                 </h2>
@@ -183,8 +183,7 @@ END:VCALENDAR`;
 
             <section className="text-center px-2 relative z-20 w-full mt-1">
               <p className="text-gray-600 font-medium text-[15px] leading-relaxed">
-                Estou chegando para encher nossos corações de alegria! Minha família está preparando tudo com muito carinho e adoraríamos celebrar esse momento com você. 💜
-              </p>
+Estamos preparando o chá de bebê com muito carinho e adoraríamos celebrar com vocês! 💜              </p>
             </section>
 
             <section className="flex flex-col gap-8 w-full relative z-20">

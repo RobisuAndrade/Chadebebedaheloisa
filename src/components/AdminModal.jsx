@@ -1,13 +1,8 @@
 import React from 'react';
-import { X, Lock, CheckCircle2 } from 'lucide-react';
+import { X, Lock } from 'lucide-react';
 
-export default function AdminModal({ isOpen, onClose, convidados }) {
+export default function AdminModal({ isOpen, onClose }) {
   if (!isOpen) return null;
-
-  // Calcula o total de pessoas (convidados + acompanhantes)
-  const totalPessoas = convidados.reduce((acc, convidado) => {
-    return acc + 1 + parseInt(convidado.acompanhantes);
-  }, 0);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
@@ -25,26 +20,24 @@ export default function AdminModal({ isOpen, onClose, convidados }) {
           </h3>
         </div>
         
-        <div className="p-6 bg-gray-50 max-h-[60vh] overflow-y-auto">
-          <div className="bg-green-100 text-green-800 p-3 rounded-xl mb-4 text-center font-bold flex items-center justify-center gap-2 shadow-sm">
-            <CheckCircle2 className="w-5 h-5" />
-            Total Confirmado: {totalPessoas}
+        <div className="p-8 bg-gray-50 flex flex-col items-center gap-4">
+          <p className="text-gray-600 text-sm text-center font-medium">
+            Por favor, insira a senha para acessar a lista de confirmados.
+          </p>
+          
+          <div className="w-full flex flex-col gap-2">
+            <input 
+              type="password" 
+              placeholder="Digite a senha" 
+              className="p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-4 focus:ring-gray-100 bg-white shadow-inner text-gray-800 font-bold placeholder-gray-400 w-full text-center text-lg transition-colors"
+            />
+            <button 
+              type="button"
+              className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3.5 px-4 rounded-xl transition-colors shadow-md mt-2"
+            >
+              Acessar
+            </button>
           </div>
-
-          {convidados.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm py-4">Ninguém confirmou presença ainda.</p>
-          ) : (
-            <ul className="space-y-3">
-              {convidados.map((c, index) => (
-                <li key={index} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                  <p className="font-bold text-gray-800">{c.nome}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    + {c.acompanhantes} acompanhante(s)
-                  </p>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
         
         <div className="p-4 bg-white border-t border-gray-100">
