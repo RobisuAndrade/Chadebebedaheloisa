@@ -1,31 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, Calendar, CheckCircle2, Cloud, Heart, Star, Moon, Users, Lock } from 'lucide-react';
 
-// Importando os componentes modais (mantenha os arquivos na pasta components!)
+// Importações do REALTIME DATABASE
+import { ref, push, onValue, remove, update } from 'firebase/database';
+import { db } from './firebase'; 
+
+// Importando os componentes modais
 import AcompanhantesModal from './components/AcompanhantesModal';
 import PresentesModal from './components/PresentesModal';
 import SucessoModal from './components/SucessoModal';
 import AdminModal from './components/AdminModal';
+import AdminPanel from './components/AdminPanel';
 
 function App() {
   const [nome, setNome] = useState('');
   const [acompanhantes, setAcompanhantes] = useState('0');
   const [confirmado, setConfirmado] = useState(false);
   
-  // Lista temporária de convidados para o cadeado dos pais
   const [listaConvidados, setListaConvidados] = useState([]);
   
   const [modalPresenteAberto, setModalPresenteAberto] = useState(false);
   const [modalSucessoAberto, setModalSucessoAberto] = useState(false);
   const [modalAcompanhantesAberto, setModalAcompanhantesAberto] = useState(false);
   const [modalAdminAberto, setModalAdminAberto] = useState(false);
+  const [painelAdminAberto, setPainelAdminAberto] = useState(false);
 
-  const handleSubmit = (e) => {
+  // Carrega os dados do Realtime Database
+  useEffect(() => {
+    const convidadosRef = ref(db, 'convidados');
+    
+    const unsubscribe = onValue(convidadosRef, (snapshot) => {
+      const data = snapshot.val();
+      const convidadosArray = [];
+      
+      if (data) {
+        // Transforma o objeto do banco de dados em um Array que o React entende
+        for (let id in data) {
+          convidadosArray.push({ id, ...data[id] });
+        }
+      }
+      setListaConvidados(convidadosArray);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Salva no Realtime Database
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setConfirmado(true);
-    setModalSucessoAberto(true);
-    // Salva o convidado na nossa listinha da área dos pais
-    setListaConvidados([...listaConvidados, { nome, acompanhantes }]);
+    
+    if (document.activeElement) {
+      document.activeElement.blur(); // Esconde o teclado
+    }
+
+    try {
+      const convidadosRef = ref(db, 'convidados');
+      await push(convidadosRef, { nome, acompanhantes }); // 'push' cria um ID único no Realtime DB
+      setConfirmado(true);
+      setModalSucessoAberto(true);
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao confirmar presença. Tente novamente.");
+    }
+  };
+
+  // Exclui do Realtime Database
+const handleDelete = async (id) => {
+    const convidadoRef = ref(db, `convidados/${id}`);
+    await remove(convidadoRef);
+  };
+
+  // Atualiza no Realtime Database
+  const handleUpdate = async (id, novoNome, novosAcompanhantes) => {
+    const convidadoRef = ref(db, `convidados/${id}`);
+    await update(convidadoRef, {
+      nome: novoNome,
+      acompanhantes: novosAcompanhantes
+    });
   };
 
   // Função para adicionar o evento ao calendário do celular
@@ -283,35 +334,29 @@ Estamos preparando o chá de bebê com muito carinho e adoraríamos celebrar com
         </div>
       </div>
 
-      {/* RENDERIZANDO OS COMPONENTES MODAIS */}
-      <AcompanhantesModal 
-        isOpen={modalAcompanhantesAberto} 
-        onClose={() => setModalAcompanhantesAberto(false)} 
-        initialValue={acompanhantes}
-        onConfirm={(qtd) => {
-          setAcompanhantes(qtd);
-          setModalAcompanhantesAberto(false);
-        }} 
-      />
-
-      <PresentesModal 
-        isOpen={modalPresenteAberto} 
-        onClose={() => setModalPresenteAberto(false)} 
-      />
-
-      <SucessoModal 
-        isOpen={modalSucessoAberto} 
-        onClose={() => setModalSucessoAberto(false)} 
-        nome={nome} 
-        acompanhantes={acompanhantes} 
-      />
-
+{/* RENDERIZANDO OS COMPONENTES MODAIS (Final do App.js) */}
+      <AcompanhantesModal isOpen={modalAcompanhantesAberto} onClose={() => setModalAcompanhantesAberto(false)} initialValue={acompanhantes} onConfirm={(qtd) => { setAcompanhantes(qtd); setModalAcompanhantesAberto(false); }} />
+      <PresentesModal isOpen={modalPresenteAberto} onClose={() => setModalPresenteAberto(false)} />
+      <SucessoModal isOpen={modalSucessoAberto} onClose={() => setModalSucessoAberto(false)} nome={nome} acompanhantes={acompanhantes} />
+      
+      {/* Modal de Login */}
       <AdminModal 
         isOpen={modalAdminAberto}
         onClose={() => setModalAdminAberto(false)}
-        convidados={listaConvidados}
+        onLoginSuccess={() => {
+          setModalAdminAberto(false);
+          setPainelAdminAberto(true);
+        }}
       />
 
+      {/* Novo Painel Dashboard */}
+      <AdminPanel 
+        isOpen={painelAdminAberto}
+        onClose={() => setPainelAdminAberto(false)}
+        convidados={listaConvidados}
+        onDelete={handleDelete}
+        onUpdate={handleUpdate}
+      />
     </div>
   );
 }
