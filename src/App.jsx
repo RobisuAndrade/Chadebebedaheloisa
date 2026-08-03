@@ -96,6 +96,17 @@ function App() {
   const [mostrarDataCalendario, setMostrarDataCalendario] = useState(true);
   const [fluxoAutoSubmit, setFluxoAutoSubmit] = useState(false);
 
+  // Leitura inicial do LocalStorage
+  useEffect(() => {
+    const nomeSalvo = localStorage.getItem('heloisa_cha_nome');
+    const acompanhantesSalvos = localStorage.getItem('heloisa_cha_acomp');
+    if (nomeSalvo) {
+      setNome(nomeSalvo);
+      if (acompanhantesSalvos) setAcompanhantes(acompanhantesSalvos);
+      setConfirmado(true);
+    }
+  }, []);
+
   // Controle inteligente do botão "Voltar" do celular/navegador
   useEffect(() => {
     const handlePopState = (event) => {
@@ -123,6 +134,7 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // SINCRONIZAÇÃO COM O BANCO E VERIFICAÇÃO SE FOI EXCLUÍDO PELOS PAIS
   useEffect(() => {
     const convidadosRef = ref(db, 'convidados');
     const unsubscribe = onValue(convidadosRef, (snapshot) => {
@@ -134,6 +146,21 @@ function App() {
         }
       }
       setListaConvidados(convidadosArray);
+
+      // SE OS PAIS EXCLUÍRAM O NOME DO BANCO, LIBERA O FORMULÁRIO NOVAMENTE AQUI
+      const nomeSalvo = localStorage.getItem('heloisa_cha_nome');
+      if (nomeSalvo && data) {
+        const aindaExiste = Object.values(data).some(
+          c => c.nome.trim().toLowerCase() === nomeSalvo.trim().toLowerCase()
+        );
+        if (!aindaExiste) {
+          localStorage.removeItem('heloisa_cha_nome');
+          localStorage.removeItem('heloisa_cha_acomp');
+          setConfirmado(false);
+          setNome('');
+          setAcompanhantes('0');
+        }
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -142,6 +169,10 @@ function App() {
     try {
       const convidadosRef = ref(db, 'convidados');
       await push(convidadosRef, { nome, acompanhantes: qtdAcompanhantes }); 
+      
+      localStorage.setItem('heloisa_cha_nome', nome);
+      localStorage.setItem('heloisa_cha_acomp', qtdAcompanhantes);
+
       setConfirmado(true);
       setModalPerguntaAberto(false);
       abrirModalComHistorico(setModalSucessoAberto);
@@ -197,7 +228,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen w-full flex justify-center sm:py-6 overflow-x-hidden font-sans text-gray-800 relative bg-[#fffbf0]">
+    <div className="min-h-screen w-full flex justify-center sm:py-6 overflow-x-hidden overscroll-none font-sans text-gray-800 relative bg-[#fffbf0]">
       
       {/* O ENXAME DE ENTRADA */}
       <EnxameDeBorboletas />
@@ -314,7 +345,7 @@ function App() {
             {confirmado ? (
               <div className="bg-[#fdfbf6] border border-[#d8b4fe] text-[#9333ea] p-6 rounded-2xl text-center flex flex-col items-center gap-3 w-full shadow-sm animate-fade-in">
                 <CheckCircle2 className="w-12 h-12 text-[#b28fc4]" />
-                <span className="font-bold">Presença confirmada!</span>
+                <span className="font-bold">Presença já confirmada para {nome} {acompanhantes !== '0' ? `(+${acompanhantes} acompanhante(s))` : ''}! ✨</span>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
