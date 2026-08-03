@@ -8,10 +8,8 @@ export default function AdminModal({ isOpen, onClose, onLoginSuccess }) {
 
   if (!isOpen) return null;
 
-const handleLogin = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    
-    // Essa linha tira o foco de qualquer campo que esteja ativo, forçando o teclado do celular a baixar!
     if (document.activeElement) {
       document.activeElement.blur();
     }
@@ -27,10 +25,10 @@ const handleLogin = (e) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative">
-        <div className="bg-gradient-to-r from-gray-700 to-gray-900 p-6 text-center relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-1 rounded-full">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-[#8b739e]/40 backdrop-blur-sm">
+      <div className="bg-[#fffbf0] w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative border-2 border-white">
+        <div className="bg-gradient-to-r from-[#d8b4fe] to-[#b28fc4] p-6 text-center relative">
+          <button onClick={onClose} className="absolute top-4 right-4 text-white hover:bg-white/20 p-1 rounded-full transition-colors">
             <X className="w-6 h-6" />
           </button>
           <h3 className="text-xl font-extrabold text-white flex items-center justify-center gap-2">
@@ -38,18 +36,18 @@ const handleLogin = (e) => {
           </h3>
         </div>
         
-        <div className="p-8 bg-gray-50 flex flex-col items-center gap-4">
+        <div className="p-8 bg-[#fffbf0] flex flex-col items-center gap-4">
           <form onSubmit={handleLogin} className="w-full flex flex-col gap-3">
             <input 
               type="text" placeholder="Login" value={login} onChange={(e) => setLogin(e.target.value)}
-              className="p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-400 w-full text-center text-lg"
+              className="p-4 border border-[#e3d5e8] rounded-2xl focus:outline-none focus:border-[#9d7bb0] focus:ring-2 focus:ring-[#f3e8ff] w-full text-center text-sm bg-white/90 text-gray-700"
             />
             <input 
               type="password" placeholder="Senha" value={senha} onChange={(e) => setSenha(e.target.value)}
-              className="p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-400 w-full text-center text-lg"
+              className="p-4 border border-[#e3d5e8] rounded-2xl focus:outline-none focus:border-[#9d7bb0] focus:ring-2 focus:ring-[#f3e8ff] w-full text-center text-sm bg-white/90 text-gray-700"
             />
-            {erro && <p className="text-red-500 font-bold text-center text-sm">{erro}</p>}
-            <button type="submit" className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3.5 rounded-xl mt-2">
+            {erro && <p className="text-rose-500 font-bold text-center text-sm">{erro}</p>}
+            <button type="submit" className="w-full bg-[#a385bc] hover:bg-[#8e68ab] text-white font-bold py-4 rounded-2xl mt-2 transition-colors shadow-md uppercase tracking-wider text-sm">
               Acessar
             </button>
           </form>

@@ -5,10 +5,9 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
   const [tempAcompanhantes, setTempAcompanhantes] = useState(initialValue);
   const scrollRef = useRef(null);
 
-  // Bloqueia a rolagem do fundo e ajusta o scroll inicial
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'; // Bloqueia o scroll da página de fundo
+      document.body.style.overflow = 'hidden';
       setTempAcompanhantes(initialValue);
       setTimeout(() => {
         if (scrollRef.current) {
@@ -16,10 +15,8 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
         }
       }, 10);
     } else {
-      document.body.style.overflow = 'unset'; // Libera o scroll
+      document.body.style.overflow = 'unset';
     }
-
-    // Limpeza caso o componente seja desmontado
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen, initialValue]);
 
@@ -33,10 +30,10 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-purple-900/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative animate-in slide-in-from-bottom-10 sm:zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[#8b739e]/40 backdrop-blur-sm">
+      <div className="bg-[#fffbf0] w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative animate-in slide-in-from-bottom-10 sm:zoom-in duration-200 border-2 border-white">
         
-        <div className="bg-gradient-to-r from-purple-400 to-fuchsia-400 p-5 text-center relative shadow-md z-10">
+        <div className="bg-gradient-to-r from-[#d8b4fe] to-[#b28fc4] p-5 text-center relative shadow-md z-10">
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:bg-white/20 p-1 rounded-full transition-colors"
@@ -49,20 +46,15 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
           </h3>
         </div>
         
-        <div className="p-6 pt-5 bg-white">
-          <p className="text-gray-500 text-center text-sm font-medium mb-4">
-            Deslize para selecionar a quantidade
+        <div className="p-6 pt-5 bg-[#fffbf0]">
+          <p className="text-[#a78bfa] text-center text-xs font-bold uppercase tracking-wider mb-4">
+            Deslize para selecionar
           </p>
           
-          <div className="relative h-48 w-full overflow-hidden flex justify-center bg-purple-50/50 rounded-2xl border border-purple-100 mb-6">
+          <div className="relative h-48 w-full overflow-hidden flex justify-center bg-white rounded-2xl border border-[#e3d5e8] mb-6 shadow-inner">
             
-            {/* Marcador Central */}
-            <div className="absolute top-1/2 left-0 w-full h-[64px] -translate-y-1/2 bg-purple-200/40 border-y border-purple-300 pointer-events-none z-10 rounded-lg"></div>
+            <div className="absolute top-1/2 left-0 w-full h-[64px] -translate-y-1/2 bg-[#f3e8ff]/50 border-y border-[#d8b4fe] pointer-events-none z-10 rounded-lg"></div>
             
-            {/* 
-              overscroll-contain e touch-action: pan-y ajudam o celular a 
-              não passar o scroll para a página de trás 
-            */}
             <div 
               ref={scrollRef}
               onScroll={handleScrollPicker}
@@ -73,11 +65,11 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
                 const isSelected = tempAcompanhantes === num;
                 const diff = Math.abs(parseInt(tempAcompanhantes) - i);
                 
-                let textClass = 'text-purple-300 opacity-40 scale-90';
+                let textClass = 'text-[#d8b4fe] opacity-40 scale-90';
                 if (isSelected) {
-                  textClass = 'text-purple-800 font-extrabold text-[22px] scale-110 drop-shadow-sm';
+                  textClass = 'text-[#8b5cf6] font-extrabold text-[22px] scale-110 drop-shadow-sm';
                 } else if (diff === 1) {
-                  textClass = 'text-purple-500 opacity-80 font-bold text-lg';
+                  textClass = 'text-[#a385bc] opacity-80 font-bold text-lg';
                 }
 
                 return (
@@ -86,9 +78,7 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
                     className={`flex items-center justify-center snap-center cursor-pointer transition-all duration-200 ease-out select-none ${textClass}`}
                     style={{ height: '64px' }}
                     onClick={() => {
-                      if (scrollRef.current) {
-                        scrollRef.current.scrollTo({ top: i * 64, behavior: 'smooth' });
-                      }
+                      if (scrollRef.current) scrollRef.current.scrollTo({ top: i * 64, behavior: 'smooth' });
                       setTempAcompanhantes(num);
                     }}
                   >
@@ -102,13 +92,13 @@ export default function AcompanhantesModal({ isOpen, onClose, onConfirm, initial
           <div className="flex gap-3">
             <button 
               onClick={onClose}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition-colors shadow-sm"
+              className="flex-1 bg-white border border-[#e3d5e8] text-[#9d7bb0] font-bold py-3.5 rounded-xl transition-colors shadow-sm"
             >
               Cancelar
             </button>
             <button 
               onClick={() => onConfirm(tempAcompanhantes)}
-              className="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl transition-colors shadow-sm"
+              className="flex-1 bg-[#a385bc] hover:bg-[#8e68ab] text-white font-bold py-3.5 rounded-xl transition-colors shadow-md"
             >
               Confirmar
             </button>

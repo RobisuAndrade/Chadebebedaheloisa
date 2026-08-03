@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Calendar, CheckCircle2, Cloud, Heart, Star, Moon, Users, Lock } from 'lucide-react';
+import { MapPin, Users, Lock, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // Importações do REALTIME DATABASE
 import { ref, push, onValue, remove, update } from 'firebase/database';
@@ -7,11 +8,75 @@ import { db } from './firebase';
 
 // Importando os componentes modais
 import AcompanhantesModal from './components/AcompanhantesModal';
-import PresentesModal from './components/PresentesModal';
 import SucessoModal from './components/SucessoModal';
 import AdminModal from './components/AdminModal';
 import AdminPanel from './components/AdminPanel';
+import RotaModal from './components/RotaModal';
+import PerguntaAcompanhanteModal from './components/PerguntaAcompanhanteModal';
 
+// =========================================================
+// COMPONENTE: BORBOLETA SVG
+// =========================================================
+const BorboletaSVG = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.96 14.945c-.84-2.12-2.31-4.04-4.22-5.46-1.57-1.17-3.66-1.72-5.6-.82-1.8.84-2.6 2.87-2.02 4.7.75 2.37 3.54 3.73 5.92 3.12 1.48-.38 2.8-1.2 3.96-2.17.65-.55 1.3-1.2 1.96-1.87v2.51c0 .4.33.73.74.73.4 0 .73-.33.73-.73v-2.51c.66.67 1.3 1.32 1.96 1.87 1.16.97 2.48 1.8 3.96 2.17 2.38.61 5.17-.75 5.92-3.12.58-1.83-.22-3.86-2.02-4.7-1.94-.9-4.03-.35-5.6.82-1.91 1.42-3.38 3.34-4.22 5.46z"/>
+    <path d="M12 4c-.41 0-.75.34-.75.75v7.5c0 .41.34.75.75.75s.75-.34.75-.75v-7.5C12.75 4.34 12.41 4 12 4z"/>
+  </svg>
+);
+
+// =========================================================
+// COMPONENTE: ENXAME DE ENTRADA
+// =========================================================
+const enxameInicial = [
+  { id: 1, xEnd: -150, yEnd: -400, scale: 0.8, delay: 0, cor: 'text-[#d8b4fe]' },
+  { id: 2, xEnd: 200, yEnd: -500, scale: 1.2, delay: 0.2, cor: 'text-[#a385bc]' },
+  { id: 3, xEnd: -50, yEnd: -600, scale: 0.6, delay: 0.1, cor: 'text-[#7a8b6c]' },
+  { id: 4, xEnd: 120, yEnd: -350, scale: 0.9, delay: 0.4, cor: 'text-[#d8b4fe]' },
+  { id: 5, xEnd: -250, yEnd: -450, scale: 1.1, delay: 0.3, cor: 'text-[#a385bc]' },
+  { id: 6, xEnd: 80, yEnd: -700, scale: 0.7, delay: 0.5, cor: 'text-[#d8b4fe]' },
+  { id: 7, xEnd: -180, yEnd: -250, scale: 1.0, delay: 0.15, cor: 'text-[#7a8b6c]' },
+  { id: 8, xEnd: 250, yEnd: -600, scale: 0.85, delay: 0.35, cor: 'text-[#a385bc]' },
+  { id: 9, xEnd: -100, yEnd: -800, scale: 1.3, delay: 0.6, cor: 'text-[#d8b4fe]' },
+  { id: 10, xEnd: 150, yEnd: -300, scale: 0.75, delay: 0.25, cor: 'text-[#7a8b6c]' },
+  { id: 11, xEnd: -200, yEnd: -550, scale: 0.95, delay: 0.45, cor: 'text-[#d8b4fe]' },
+  { id: 12, xEnd: 180, yEnd: -750, scale: 1.05, delay: 0.55, cor: 'text-[#a385bc]' },
+];
+
+const EnxameDeBorboletas = () => {
+  const [mostrar, setMostrar] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMostrar(false), 4500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!mostrar) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] pointer-events-none flex items-end justify-center overflow-hidden pb-10">
+      {enxameInicial.map((b) => (
+        <motion.div
+          key={b.id}
+          className={`absolute ${b.cor}`}
+          initial={{ opacity: 0, x: 0, y: 150, scale: b.scale, rotate: 0 }}
+          animate={{ 
+            opacity: [0, 1, 1, 0], 
+            x: b.xEnd, 
+            y: b.yEnd, 
+            rotate: [0, b.xEnd > 0 ? 45 : -45, b.xEnd > 0 ? -15 : 15, b.xEnd > 0 ? 45 : -45]
+          }}
+          transition={{ duration: 3.5, delay: b.delay, ease: "easeOut" }}
+        >
+          <BorboletaSVG className="w-8 h-8" />
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// =========================================================
+// APLICATIVO PRINCIPAL
+// =========================================================
 function App() {
   const [nome, setNome] = useState('');
   const [acompanhantes, setAcompanhantes] = useState('0');
@@ -19,80 +84,98 @@ function App() {
   
   const [listaConvidados, setListaConvidados] = useState([]);
   
-  const [modalPresenteAberto, setModalPresenteAberto] = useState(false);
   const [modalSucessoAberto, setModalSucessoAberto] = useState(false);
   const [modalAcompanhantesAberto, setModalAcompanhantesAberto] = useState(false);
   const [modalAdminAberto, setModalAdminAberto] = useState(false);
   const [painelAdminAberto, setPainelAdminAberto] = useState(false);
+  
+  const [modalRotaAberto, setModalRotaAberto] = useState(false);
+  const [dadosRota, setDadosRota] = useState({ url: '', nomeApp: '' });
 
-  // Carrega os dados do Realtime Database
+  const [modalPerguntaAberto, setModalPerguntaAberto] = useState(false);
+  const [mostrarDataCalendario, setMostrarDataCalendario] = useState(true);
+  const [fluxoAutoSubmit, setFluxoAutoSubmit] = useState(false);
+
+  // Controle inteligente do botão "Voltar" do celular/navegador
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (modalSucessoAberto) { setModalSucessoAberto(false); event.preventDefault(); }
+      else if (modalAcompanhantesAberto) { setModalAcompanhantesAberto(false); event.preventDefault(); }
+      else if (modalPerguntaAberto) { setModalPerguntaAberto(false); event.preventDefault(); }
+      else if (modalRotaAberto) { setModalRotaAberto(false); event.preventDefault(); }
+      else if (modalAdminAberto) { setModalAdminAberto(false); event.preventDefault(); }
+      else if (painelAdminAberto) { setPainelAdminAberto(false); event.preventDefault(); }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [modalSucessoAberto, modalAcompanhantesAberto, modalPerguntaAberto, modalRotaAberto, modalAdminAberto, painelAdminAberto]);
+
+  const abrirModalComHistorico = (setModal) => {
+    window.history.pushState({ modalOpen: true }, '');
+    setModal(true);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMostrarDataCalendario(prev => !prev);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const convidadosRef = ref(db, 'convidados');
-    
     const unsubscribe = onValue(convidadosRef, (snapshot) => {
       const data = snapshot.val();
       const convidadosArray = [];
-      
       if (data) {
-        // Transforma o objeto do banco de dados em um Array que o React entende
         for (let id in data) {
           convidadosArray.push({ id, ...data[id] });
         }
       }
       setListaConvidados(convidadosArray);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // Salva no Realtime Database
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (document.activeElement) {
-      document.activeElement.blur(); // Esconde o teclado
-    }
-
+  const confirmarPresencaFinal = async (qtdAcompanhantes) => {
     try {
       const convidadosRef = ref(db, 'convidados');
-      await push(convidadosRef, { nome, acompanhantes }); // 'push' cria um ID único no Realtime DB
+      await push(convidadosRef, { nome, acompanhantes: qtdAcompanhantes }); 
       setConfirmado(true);
-      setModalSucessoAberto(true);
+      setModalPerguntaAberto(false);
+      abrirModalComHistorico(setModalSucessoAberto);
     } catch (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao confirmar presença. Tente novamente.");
     }
   };
 
-  // Exclui do Realtime Database
-const handleDelete = async (id) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (document.activeElement) document.activeElement.blur(); 
+    
+    if (!nome.trim()) return;
+
+    if (acompanhantes === '0') {
+      abrirModalComHistorico(setModalPerguntaAberto);
+    } else {
+      confirmarPresencaFinal(acompanhantes);
+    }
+  };
+
+  const handleDelete = async (id) => {
     const convidadoRef = ref(db, `convidados/${id}`);
     await remove(convidadoRef);
   };
 
-  // Atualiza no Realtime Database
   const handleUpdate = async (id, novoNome, novosAcompanhantes) => {
     const convidadoRef = ref(db, `convidados/${id}`);
-    await update(convidadoRef, {
-      nome: novoNome,
-      acompanhantes: novosAcompanhantes
-    });
+    await update(convidadoRef, { nome: novoNome, acompanhantes: novosAcompanhantes });
   };
 
-  // Função para adicionar o evento ao calendário do celular
   const handleAddToCalendar = () => {
-    // Configuração do evento (Formato Data: YYYYMMDDTHHMMSSZ)
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:20260912T150000
-DTEND:20260912T190000
-SUMMARY:Chá de Bebê da Heloísa
-LOCATION:Chácara Juromari
-DESCRIPTION:Venha celebrar o Chá de Bebê da nossa querida Heloísa!
-END:VEVENT
-END:VCALENDAR`;
-
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:20260912T150000\nDTEND:20260912T190000\nSUMMARY:Chá de Bebê da Heloísa\nLOCATION:Chácara Juromari\nEND:VEVENT\nEND:VCALENDAR`;
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -108,255 +191,264 @@ END:VCALENDAR`;
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 
+  const abrirConfirmacaoRota = (url, nomeApp) => {
+    setDadosRota({ url, nomeApp });
+    abrirModalComHistorico(setModalRotaAberto);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center py-8 font-sans bg-gradient-to-b from-[#f3e8ff] via-[#e0e7ff] to-[#dbeafe] relative overflow-x-hidden">
+    <div className="min-h-screen w-full flex justify-center sm:py-6 overflow-x-hidden font-sans text-gray-800 relative bg-[#fffbf0]">
       
-      {/* ========================================================= */}
-      {/* CADEADO ESCONDIDO PARA OS PAIS (AGORA ABSOLUTO NO TOPO) */}
-      {/* ========================================================= */}
+      {/* O ENXAME DE ENTRADA */}
+      <EnxameDeBorboletas />
+
       <div 
-        className="absolute top-4 left-4 z-[60] opacity-30 hover:opacity-100 cursor-pointer p-2 transition-opacity"
-        onClick={() => setModalAdminAberto(true)}
-      >
-        <Lock className="w-6 h-6 text-purple-900 drop-shadow-sm" />
-      </div>
+        className="fixed inset-0 z-0 pointer-events-none opacity-90"
+        style={{ 
+          backgroundImage: "url('/Rodapeatecabecalho.png')", 
+          backgroundSize: "cover", 
+          backgroundRepeat: "no-repeat", 
+          backgroundPosition: "center" 
+        }}
+      ></div>
 
-      {/* ========================================================= */}
-      {/* CSS PERSONALIZADO E FIX SAMSUNG APENAS PARA DIVS */}
-      {/* ========================================================= */}
-      <style dangerouslySetInnerHTML={{__html: `
-        :root { color-scheme: light only !important; }
+      <div className="w-full max-w-[420px] sm:max-w-xl min-h-screen sm:min-h-[850px] relative z-10 flex flex-col pb-24 sm:bg-white/30 sm:backdrop-blur-sm sm:rounded-[2.5rem] sm:shadow-2xl sm:border sm:border-white/60 overflow-hidden">
         
-        /* FIX PARA O NAVEGADOR SAMSUNG INTERNET (APLICAR APENAS EM DIVS PARA NÃO QUADRADAR SVGS) */
-        .force-white {
-          background-color: #ffffff !important;
-          background-image: linear-gradient(to bottom, #ffffff, #ffffff) !important;
-        }
-
-        @keyframes breathe {
-          0%, 100% { transform: scale(1) translateY(0); }
-          50% { transform: scale(1.04) translateY(-3px); }
-        }
-        .animate-breathe { animation: breathe 3.5s ease-in-out infinite; }
-
-        @keyframes gentle-bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        .animate-gentle-bounce { animation: gentle-bounce 2s infinite ease-in-out; }
-      `}} />
-
-      {/* ========================================================= */}
-      {/* NUVENS SÓLIDAS DO FUNDO (SEM O FIX DA SAMSUNG) */}
-      {/* ========================================================= */}
-      <div className="absolute inset-0 pointer-events-none z-0 flex justify-center overflow-hidden">
-        <div className="relative w-full max-w-2xl h-full">
-          <Cloud className="absolute top-4 -left-8 text-white w-32 h-32 opacity-70 drop-shadow-md" fill="white" />
-          <Cloud className="absolute top-32 -right-12 text-white w-48 h-48 opacity-80 drop-shadow-md" fill="white" />
-          <Cloud className="absolute top-1/4 -left-16 text-white w-56 h-56 opacity-60 drop-shadow-md" fill="white" />
-          <Cloud className="absolute top-1/2 -right-16 text-white w-44 h-44 opacity-70 drop-shadow-md" fill="white" />
-          <Cloud className="absolute bottom-1/3 -left-10 text-white w-40 h-40 opacity-80 drop-shadow-md" fill="white" />
-          <Cloud className="absolute bottom-20 -right-8 text-white w-36 h-36 opacity-90 drop-shadow-md" fill="white" />
+        <div 
+          className="absolute top-4 right-4 z-[60] opacity-40 hover:opacity-100 cursor-pointer p-2 transition-opacity bg-white/50 rounded-full backdrop-blur-sm" 
+          onClick={() => abrirModalComHistorico(setModalAdminAberto)}
+        >
+          <Lock className="w-5 h-5 text-[#8b739e]" />
         </div>
-      </div>
 
-      <div className="w-full relative flex flex-col items-center px-5">
-        
-        {/* ========================================================= */}
-        {/* NUVEM BRANCA PRINCIPAL (CONTEÚDO) */}
-        {/* ========================================================= */}
-        <div className="w-full max-w-md relative z-10 mt-28 filter drop-shadow-[0_15px_30px_rgba(0,0,0,0.1)] mb-12">
+        <div 
+          className="w-full relative shrink-0 z-15 sm:h-[320px] md:h-[380px]" 
+          style={{ 
+            WebkitMaskImage: 'linear-gradient(to bottom, black 65%, transparent 100%)', 
+            maskImage: 'linear-gradient(to bottom, black 65%, transparent 100%)' 
+          }}
+        >
+          <img 
+            src="/Banner.jpeg" 
+            alt="Chá de Bebê da Heloísa" 
+            className="w-full h-full sm:object-cover sm:object-center object-contain relative z-0"
+          />
+        </div>
+
+        <div className="w-full px-6 sm:px-12 flex flex-col items-center gap-6 relative z-20 flex-grow -mt-4 sm:-mt-6">
           
-          {/* DECORAÇÕES (ESTRELAS, CORAÇÕES, LUA) */}
-          <Star className="absolute -top-20 left-0 text-yellow-400 w-8 h-8 animate-pulse z-0 drop-shadow-sm" fill="#facc15" />
-          <Star className="absolute top-1/4 -right-6 text-yellow-400 w-6 h-6 animate-pulse z-0 drop-shadow-sm delay-75" fill="#facc15" />
-          <Star className="absolute bottom-1/3 -left-6 text-yellow-400 w-5 h-5 animate-pulse z-0 drop-shadow-sm delay-150" fill="#facc15" />
-          <Star className="absolute top-10 -left-12 text-yellow-300 w-4 h-4 animate-pulse z-0 opacity-70 delay-300" fill="#fde047" />
-          <Star className="absolute top-2/3 -right-10 text-yellow-300 w-5 h-5 animate-pulse z-0 opacity-60 delay-500" fill="#fde047" />
-          <Star className="absolute -bottom-6 right-16 text-yellow-300 w-3 h-3 animate-pulse z-0 opacity-80 delay-700" fill="#fde047" />
-          <Star className="absolute top-1/2 left-2 text-yellow-200 w-3 h-3 animate-pulse z-20 opacity-80" fill="#fef08a" />
-          <Moon className="absolute -top-16 -right-2 text-purple-300 w-12 h-12 z-0 drop-shadow-sm transform rotate-12" fill="#d8b4fe" />
-          <Heart className="absolute top-1/4 -left-5 text-purple-300 w-7 h-7 animate-bounce z-20 drop-shadow-sm" fill="#d8b4fe" />
-          <Heart className="absolute top-2/3 -right-4 text-purple-300 w-6 h-6 animate-bounce z-20 drop-shadow-sm delay-150" fill="#d8b4fe" />
-          <Heart className="absolute -bottom-10 left-10 text-purple-300 w-8 h-8 animate-bounce z-20 drop-shadow-sm delay-75" fill="#d8b4fe" />
-          <Heart className="absolute top-0 -right-8 text-pink-300 w-4 h-4 animate-bounce z-20 opacity-70 delay-300" fill="#f9a8d4" />
-          <Heart className="absolute bottom-1/4 -left-10 text-fuchsia-300 w-5 h-5 animate-bounce z-20 opacity-60 delay-500" fill="#f0abfc" />
-          <Heart className="absolute -top-6 left-1/4 text-purple-200 w-3 h-3 animate-bounce z-20 opacity-80 delay-1000" fill="#e9d5ff" />
-          <Star className="absolute top-[40%] -right-14 text-yellow-300 w-6 h-6 animate-pulse z-0 opacity-80 delay-200" fill="#fde047" />
-          <Star className="absolute top-[60%] -right-8 text-yellow-400 w-4 h-4 animate-pulse z-0 opacity-90 delay-500" fill="#facc15" />
-          <Moon className="absolute top-[45%] -right-10 text-purple-200 w-8 h-8 z-0 drop-shadow-sm transform -rotate-12 opacity-70" fill="#e9d5ff" />
-          <Heart className="absolute top-[35%] -right-10 text-pink-300 w-5 h-5 animate-bounce z-20 opacity-80 delay-700" fill="#f9a8d4" />
-          <Heart className="absolute bottom-[20%] -right-12 text-purple-300 w-6 h-6 animate-bounce z-20 drop-shadow-sm delay-300" fill="#d8b4fe" />
+          <motion.div 
+            className="absolute top-[-20px] right-[5%] z-30 text-[#d8b4fe] pointer-events-none drop-shadow-sm" 
+            animate={{ y: [0, -15, 0], x: [0, 10, -5, 0], rotate: [-5, 10, -5] }} 
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <BorboletaSVG className="w-8 h-8 opacity-80" />
+          </motion.div>
 
-          {/* CÍRCULOS DA NUVEM (COM A CLASSE force-white) */}
-          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-48 h-48 rounded-full z-10 force-white"></div>
-          <div className="absolute -top-4 -left-1 w-36 h-36 rounded-full z-10 force-white"></div>
-          <div className="absolute -top-6 -right-1 w-40 h-40 rounded-full z-10 force-white"></div>
-          <div className="absolute top-24 -left-5 w-32 h-32 rounded-full z-10 force-white"></div>
-          <div className="absolute top-32 -right-5 w-36 h-36 rounded-full z-10 force-white"></div>
-          <div className="absolute bottom-32 -left-5 w-36 h-36 rounded-full z-10 force-white"></div>
-          <div className="absolute bottom-24 -right-5 w-32 h-32 rounded-full z-10 force-white"></div>
-          <div className="absolute -bottom-10 left-4 w-40 h-40 rounded-full z-10 force-white"></div>
-          <div className="absolute -bottom-8 right-4 w-36 h-36 rounded-full z-10 force-white"></div>
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-48 h-48 rounded-full z-10 force-white"></div>
+          <motion.div 
+            className="absolute top-[30px] left-[2%] z-30 text-[#7a8b6c] pointer-events-none drop-shadow-sm" 
+            animate={{ y: [0, 15, 0], x: [0, -12, 5, 0], rotate: [5, -15, 5] }} 
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          >
+            <BorboletaSVG className="w-5 h-5 opacity-70" />
+          </motion.div>
 
-          {/* CONTEÚDO */}
-          <div className="rounded-[3.5rem] p-6 sm:p-8 relative z-20 flex flex-col gap-7 pt-20 pb-12 force-white text-gray-800">
+          {/* ========================================================= */}
+          {/* 1. CALENDÁRIO */}
+          {/* ========================================================= */}
+          <button 
+            onClick={handleAddToCalendar}
+            className="flex items-center justify-center gap-2 bg-white/90 backdrop-blur-md w-full py-3.5 rounded-3xl border border-[#e3d5e8] shadow-sm transition-transform active:scale-95 hover:bg-[#faf6ff]"
+          >
+            <img src="/calendario.png" alt="Calendário" className="w-5 h-5 object-contain opacity-80" />
             
-            <section className="relative flex flex-col items-center w-full">
-              <div className="absolute -top-28 left-1/2 transform -translate-x-1/2 z-30">
-                <img src="/bebe-dormindo.png" alt="Bebê Dormindo" className="w-32 h-32 drop-shadow-xl animate-breathe" />
+            <div className="relative h-5 w-[140px] flex items-center justify-center overflow-hidden">
+              <motion.span
+                initial={false}
+                animate={{ y: mostrarDataCalendario ? 0 : -30, opacity: mostrarDataCalendario ? 1 : 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute font-extrabold uppercase tracking-widest text-[13px] text-[#8b739e] whitespace-nowrap"
+              >
+                12 de Setembro
+              </motion.span>
+              <motion.span
+                initial={false}
+                animate={{ y: !mostrarDataCalendario ? 0 : 30, opacity: !mostrarDataCalendario ? 1 : 0 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute font-extrabold uppercase tracking-widest text-[11px] text-[#a385bc] whitespace-nowrap"
+              >
+                Clique para Salvar
+              </motion.span>
+            </div>
+          </button>
+
+          {/* ========================================================= */}
+          {/* 2. FORMULÁRIO DE PRESENÇA */}
+          {/* ========================================================= */}
+          <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#8b5cf6]/5 border border-[#e9d5ff] flex flex-col items-center relative mt-2">
+            
+            <motion.div 
+              className="absolute top-[25%] left-[-20px] z-30 text-[#a385bc] pointer-events-none drop-shadow-sm" 
+              animate={{ y: [0, 20, 0], x: [0, -10, 5, 0], rotate: [5, -15, 5] }} 
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <BorboletaSVG className="w-7 h-7 opacity-70" />
+            </motion.div>
+            
+            <motion.div 
+              className="absolute top-[60%] right-[-15px] z-30 text-[#d8b4fe] pointer-events-none drop-shadow-sm" 
+              animate={{ y: [0, -25, 0], x: [0, 15, -5, 0], rotate: [-10, 20, -10] }} 
+              transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            >
+              <BorboletaSVG className="w-4 h-4 opacity-90" />
+            </motion.div>
+
+            <div className="absolute -top-3.5 bg-[#b28fc4] text-white text-[10px] font-extrabold uppercase tracking-widest py-1.5 px-6 rounded-full shadow-sm">
+              Sua Presença
+            </div>
+
+            <p className="text-center text-[10px] sm:text-xs text-[#9d7bb0] font-bold mt-3 mb-6 uppercase tracking-wider">
+              Por favor, confirme para organizarmos tudo com carinho 💜
+            </p>
+
+            {confirmado ? (
+              <div className="bg-[#fdfbf6] border border-[#d8b4fe] text-[#9333ea] p-6 rounded-2xl text-center flex flex-col items-center gap-3 w-full shadow-sm animate-fade-in">
+                <CheckCircle2 className="w-12 h-12 text-[#b28fc4]" />
+                <span className="font-bold">Presença confirmada!</span>
               </div>
-              
-              <div className="absolute top-1/2 -left-3 w-10 h-16 bg-purple-400 skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
-              <div className="absolute top-1/2 -right-3 w-10 h-16 bg-purple-400 -skew-y-12 transform -translate-y-1/2 rounded-sm -z-10"></div>
-              
-              <div className="relative bg-gradient-to-b from-purple-50 to-fuchsia-50 border-2 border-purple-200 pt-6 pb-6 px-4 rounded-3xl shadow-sm z-10 flex flex-col items-center w-full">
-                <h2 className="text-xs font-bold text-purple-500 uppercase tracking-widest mb-1">
-                  Chá de Bebê da
-                </h2>
-                <h1 className="text-5xl sm:text-6xl font-extrabold text-purple-700 mb-4 text-center" style={{ fontFamily: 'cursive, sans-serif' }}>
-                  Heloísa
-                </h1>
+            ) : (
+              <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
                 
-                {/* BOTÃO ADICIONAR AO CALENDÁRIO */}
-                <button 
-                  onClick={handleAddToCalendar}
-                  className="flex items-center gap-2 bg-white/90 hover:bg-purple-100 px-6 py-2 rounded-full border border-purple-200 shadow-sm mt-1 transition-colors active:scale-95"
-                >
-                  <Calendar className="w-4 h-4 text-purple-600" />
-                  <span className="text-purple-700 font-extrabold uppercase tracking-wider text-sm">
-                    12 de Setembro
-                  </span>
-                </button>
-              </div>
-            </section>
-
-            <section className="text-center px-2 relative z-20 w-full mt-1">
-              <p className="text-gray-600 font-medium text-[15px] leading-relaxed">
-Estamos preparando o chá de bebê com muito carinho e adoraríamos celebrar com vocês! 💜              </p>
-            </section>
-
-            <section className="flex flex-col gap-8 w-full relative z-20">
-              
-              <div className="bg-purple-200 p-1 rounded-[2rem] shadow-sm">
-                <div className="p-6 rounded-[1.7rem] relative force-white">
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-extrabold uppercase tracking-widest py-1.5 px-6 rounded-full shadow-md border-2 border-white whitespace-nowrap">
-                    Sua Presença
+                <div className="flex gap-2 w-full items-end">
+                  <div className="flex flex-col gap-1.5 flex-1 text-left">
+                    <label htmlFor="nome_convidado" className="text-[10px] font-bold text-[#9d7bb0] uppercase ml-1">
+                      Seu Nome Completo
+                    </label>
+                    <input 
+                      id="nome_convidado" 
+                      type="text" 
+                      placeholder="Digite seu nome aqui" 
+                      required
+                      enterKeyHint="done"
+                      className="p-4 border border-[#e3d5e8] rounded-2xl text-sm focus:outline-none focus:border-[#9d7bb0] focus:ring-2 focus:ring-[#f3e8ff] bg-white/90 text-gray-700 w-full placeholder-gray-400 shadow-sm"
+                      value={nome} 
+                      onChange={(e) => setNome(e.target.value)}
+                    />
                   </div>
                   
-                  <h3 className="text-2xl font-extrabold text-center text-purple-800 mb-1 mt-4">Você vai?</h3>
-                  
-                  <p className="text-center text-[11px] text-gray-500 font-medium mb-5 mt-1">
-                    Por favor, confirme para organizarmos tudo com carinho 💜
-                  </p>
-                  
-                  {confirmado ? (
-                    <div className="bg-green-50 border-2 border-green-200 text-green-700 p-5 rounded-2xl text-center font-bold flex flex-col items-center gap-2">
-                      <CheckCircle2 className="w-12 h-12 text-green-500" />
-                      Presença confirmada!
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                      <div className="flex flex-col gap-3 w-full">
-                        <div className="flex flex-col gap-1.5 w-full">
-                          <label htmlFor="nome_convidado" className="text-[11px] font-extrabold text-purple-700 uppercase ml-2 tracking-wide">
-                            Seu Nome Completo
-                          </label>
-                          <input 
-                            id="nome_convidado" type="text" placeholder="Digite seu nome aqui" required
-                            className="p-4 border-2 border-purple-200 rounded-2xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 bg-purple-50/20 shadow-inner text-gray-800 font-bold placeholder-gray-400 w-full text-base transition-colors"
-                            value={nome} onChange={(e) => setNome(e.target.value)}
-                          />
-                        </div>
-                        
-                        <button
-                          type="button" onClick={() => setModalAcompanhantesAberto(true)}
-                          className="w-full py-3.5 bg-purple-50/40 border-2 border-dashed border-purple-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 shadow-sm text-purple-700 font-bold flex items-center justify-center transition-colors hover:bg-purple-100/50"
-                        >
-                          <Users className="w-5 h-5 mr-2" />
-                          <span className="text-[11px] uppercase tracking-wider">
-                            {acompanhantes === '0' ? 'Adicionar Acompanhante' : `${acompanhantes} Acompanhante(s) Adicionado(s)`}
-                          </span>
-                        </button>
-                      </div>
-                      
-                      <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white font-extrabold py-4 px-4 rounded-2xl transition-colors shadow-md text-lg mt-1">
-                        Confirmar Agora
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-center w-full">
-                <div className="animate-gentle-bounce">
-                  <button 
-                    onClick={() => setModalPresenteAberto(true)}
-                    className="flex items-center gap-3 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 py-2 px-6 rounded-xl shadow-sm transition-transform hover:scale-105 w-auto"
+                  <button
+                    type="button" 
+                    onClick={() => {
+                      if (document.activeElement) document.activeElement.blur();
+                      setFluxoAutoSubmit(false);
+                      abrirModalComHistorico(setModalAcompanhantesAberto);
+                    }}
+                    className="relative h-[54px] w-[54px] shrink-0 bg-white/90 border border-dashed border-[#d8b4fe] rounded-2xl text-[#9333ea] flex items-center justify-center transition-colors hover:bg-[#faf5ff] shadow-sm"
                   >
-                    <img src="/image_838a75.png" alt="Caixa de Presente" className="w-10 h-10 animate-pulse" />
-                    <div className="text-left">
-                      <p className="text-yellow-800 font-bold text-sm leading-tight uppercase tracking-wide">Lista de Presentes</p>
-                      <p className="text-yellow-600 text-[9px] font-medium mt-0.5">Toque para ver sugestões</p>
-                    </div>
+                    <Users className="w-6 h-6 opacity-80" />
+                    {acompanhantes !== '0' && (
+                      <span className="absolute -top-2 -right-2 bg-[#b28fc4] text-white text-[11px] font-extrabold w-6 h-6 flex items-center justify-center rounded-full shadow-md border-2 border-white">
+                        +{acompanhantes}
+                      </span>
+                    )}
                   </button>
                 </div>
-              </div>
-
-              <hr className="border-purple-100 border-t-2 border-dashed w-3/4 mx-auto" />
-
-              <div className="flex flex-col items-center">
-                <h2 className="text-purple-800 font-extrabold uppercase tracking-widest text-xl mb-3 flex items-center gap-2">
-                  <MapPin className="w-6 h-6 text-purple-600" />
-                  Endereço
-                </h2>
                 
-                <div className="bg-blue-50/70 rounded-3xl p-6 border border-blue-100 flex flex-col items-center w-full">
-                  <h3 className="font-bold text-blue-900 text-lg mb-1">Chácara Juromari</h3>
-                  <p className="text-xs text-blue-600 mb-5 text-center font-medium">Toque para traçar a rota até o local da festa:</p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-3 w-full">
-                    <a href={googleMapsUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-blue-200 text-blue-700 font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors shadow-sm">
-                      <img src="/google-maps.png" alt="Google Maps" className="w-5 h-5" />
-                      Maps
-                    </a>
-                    <a href={wazeUrl} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-cyan-200 text-cyan-700 font-bold py-3 rounded-xl hover:bg-cyan-50 transition-colors shadow-sm">
-                      <img src="/waze.png" alt="Waze" className="w-5 h-5" />
-                      Waze
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </section>
+                <button type="submit" className="w-full bg-[#a385bc] hover:bg-[#8e68ab] text-white font-extrabold py-4 rounded-2xl text-sm mt-1 transition-colors shadow-md uppercase tracking-wider">
+                  Confirmar Agora
+                </button>
+              </form>
+            )}
+          </div>
 
+          {/* ========================================================= */}
+          {/* 3. LOCALIZAÇÃO */}
+          {/* ========================================================= */}
+          <div className="w-full flex flex-col items-center relative">
+            
+            <motion.div 
+              className="absolute top-[20px] left-[5%] z-30 text-[#a385bc] pointer-events-none drop-shadow-sm" 
+              animate={{ y: [0, -20, 0], x: [0, -15, 5, 0], rotate: [10, -5, 10] }} 
+              transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            >
+              <BorboletaSVG className="w-6 h-6 opacity-75" />
+            </motion.div>
+            
+            <motion.div 
+              className="absolute bottom-[-15px] right-[-10px] z-30 text-[#7a8b6c] pointer-events-none drop-shadow-sm" 
+              animate={{ y: [0, -10, 0], x: [0, 15, 0], rotate: [-10, 5, -10] }} 
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <BorboletaSVG className="w-5 h-5 opacity-90" />
+            </motion.div>
+            
+            <div className="bg-[#f0f4eb]/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border-2 border-[#c5d6ba]/50 flex flex-col items-center w-full shadow-lg shadow-[#5c6b4d]/10 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#e4ebd0]/40 rounded-full blur-xl pointer-events-none"></div>
+
+              <h2 className="text-[#5c6b4d] font-extrabold uppercase tracking-widest text-[16px] mb-1 flex items-center gap-1.5 relative z-10">
+                <MapPin className="w-5 h-5" /> Localização
+              </h2>
+              
+              <h3 className="font-semibold text-[#7a8b6c] text-sm sm:text-base mb-5 relative z-10">
+                Chácara Juromari
+              </h3>
+              
+              <div className="flex flex-row gap-3 w-full relative z-10 mb-4">
+                <button 
+                  onClick={() => abrirConfirmacaoRota(googleMapsUrl, 'Google Maps')} 
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#c5d6ba] text-[#5c6b4d] font-bold py-3.5 rounded-2xl hover:bg-[#f8faf5] transition-colors shadow-sm text-sm"
+                >
+                  <img src="/google-maps.png" alt="Google Maps" className="w-5 h-5" /> Maps
+                </button>
+                <button 
+                  onClick={() => abrirConfirmacaoRota(wazeUrl, 'Waze')} 
+                  className="flex-1 flex items-center justify-center gap-2 bg-white border border-[#c5d6ba] text-[#5c6b4d] font-bold py-3.5 rounded-2xl hover:bg-[#f8faf5] transition-colors shadow-sm text-sm"
+                >
+                  <img src="/waze.png" alt="Waze" className="w-5 h-5" /> Waze
+                </button>
+              </div>
+
+              <p className="text-[10px] sm:text-xs uppercase tracking-wider text-[#8b9e7d] text-center font-bold relative z-10">
+                Toque nos botões para traçar a rota
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-{/* RENDERIZANDO OS COMPONENTES MODAIS (Final do App.js) */}
-      <AcompanhantesModal isOpen={modalAcompanhantesAberto} onClose={() => setModalAcompanhantesAberto(false)} initialValue={acompanhantes} onConfirm={(qtd) => { setAcompanhantes(qtd); setModalAcompanhantesAberto(false); }} />
-      <PresentesModal isOpen={modalPresenteAberto} onClose={() => setModalPresenteAberto(false)} />
-      <SucessoModal isOpen={modalSucessoAberto} onClose={() => setModalSucessoAberto(false)} nome={nome} acompanhantes={acompanhantes} />
+      {/* COMPONENTES MODAIS */}
+      <PerguntaAcompanhanteModal 
+        isOpen={modalPerguntaAberto} 
+        onNao={() => confirmarPresencaFinal('0')} 
+        onSim={() => { 
+          setModalPerguntaAberto(false); 
+          setFluxoAutoSubmit(true); 
+          abrirModalComHistorico(setModalAcompanhantesAberto); 
+        }} 
+      />
       
-      {/* Modal de Login */}
-      <AdminModal 
-        isOpen={modalAdminAberto}
-        onClose={() => setModalAdminAberto(false)}
-        onLoginSuccess={() => {
-          setModalAdminAberto(false);
-          setPainelAdminAberto(true);
-        }}
+      <AcompanhantesModal 
+        isOpen={modalAcompanhantesAberto} 
+        onClose={() => {
+          setModalAcompanhantesAberto(false);
+          setFluxoAutoSubmit(false);
+        }} 
+        initialValue={acompanhantes} 
+        onConfirm={(qtd) => { 
+          setAcompanhantes(qtd); 
+          setModalAcompanhantesAberto(false);
+          if (fluxoAutoSubmit) {
+            confirmarPresencaFinal(qtd);
+            setFluxoAutoSubmit(false);
+          }
+        }} 
       />
-
-      {/* Novo Painel Dashboard */}
-      <AdminPanel 
-        isOpen={painelAdminAberto}
-        onClose={() => setPainelAdminAberto(false)}
-        convidados={listaConvidados}
-        onDelete={handleDelete}
-        onUpdate={handleUpdate}
-      />
+      
+      <SucessoModal isOpen={modalSucessoAberto} onClose={() => setModalSucessoAberto(false)} nome={nome} acompanhantes={acompanhantes} />
+      <RotaModal isOpen={modalRotaAberto} onClose={() => setModalRotaAberto(false)} urlDestino={dadosRota.url} nomeApp={dadosRota.nomeApp} />
+      
+      <AdminModal isOpen={modalAdminAberto} onClose={() => setModalAdminAberto(false)} onLoginSuccess={() => { setModalAdminAberto(false); abrirModalComHistorico(setPainelAdminAberto); }} />
+      <AdminPanel isOpen={painelAdminAberto} onClose={() => setPainelAdminAberto(false)} convidados={listaConvidados} onDelete={handleDelete} onUpdate={handleUpdate} />
     </div>
   );
 }
