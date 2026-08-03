@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Users, CheckCircle2, Pencil, Trash2, Save, Cloud, Heart, Star, Moon, AlertCircle } from 'lucide-react';
+import { X, Users, CheckCircle2, Pencil, Trash2, Save, Cloud, Heart, Star, Moon, AlertCircle, Search, Download, Clock } from 'lucide-react';
 
 export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUpdate }) {
   const [abaAtiva, setAbaAtiva] = useState('resumo');
@@ -7,12 +7,17 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
   const [nomeEdit, setNomeEdit] = useState('');
   const [acompanhantesEdit, setAcompanhantesEdit] = useState('0');
 
-  // ESTADO PARA O NOSSO MODAL DE CONFIRMAÇÃO PERSONALIZADO
+  // ESTADO PARA A BARRA DE PESQUISA
+  const [termoBusca, setTermoBusca] = useState('');
+
+  // ESTADO DO TOOLTIP (QUADRADINHO DE INFORMAÇÃO)
+  const [tooltipAberto, setTooltipAberto] = useState(null);
+
   const [modalConfirmacao, setModalConfirmacao] = useState({
     aberto: false,
     mensagem: '',
     acao: null,
-    tipo: '' // 'salvar' ou 'deletar' para mudar a cor do botão confirmar
+    tipo: '' 
   });
 
   if (!isOpen) return null;
@@ -21,13 +26,18 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
   const totalTitulares = convidados.length;
   const totalPessoas = convidados.reduce((acc, c) => acc + 1 + parseInt(c.acompanhantes || 0), 0);
 
+  // Filtra a lista com base na barra de pesquisa
+  const convidadosFiltrados = convidados.filter(c => 
+    c.nome.toLowerCase().includes(termoBusca.toLowerCase())
+  );
+
   const iniciarEdicao = (convidado) => {
     setEditandoId(convidado.id);
     setNomeEdit(convidado.nome);
     setAcompanhantesEdit(convidado.acompanhantes);
+    setTooltipAberto(null); // Esconde a dica se abrir para edição
   };
 
-  // ABRE O MODAL PARA SALVAR
   const tentarSalvar = (id) => {
     setModalConfirmacao({
       aberto: true,
@@ -40,7 +50,6 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
     });
   };
 
-  // ABRE O MODAL PARA DELETAR
   const tentarDeletar = (id) => {
     setModalConfirmacao({
       aberto: true,
@@ -50,7 +59,6 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
     });
   };
 
-  // FECHA O MODAL E EXECUTA A AÇÃO
   const executarAcao = () => {
     if (modalConfirmacao.acao) modalConfirmacao.acao();
     fecharModalConfirmacao();
@@ -58,6 +66,30 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
 
   const fecharModalConfirmacao = () => {
     setModalConfirmacao({ aberto: false, mensagem: '', acao: null, tipo: '' });
+  };
+
+  // FUNÇÃO PARA EXPORTAR EXCEL (CSV)
+  const exportarCSV = () => {
+    let csvContent = "\ufeff"; 
+    csvContent += "Nome do Convidado,Acompanhantes,Total de Pessoas,Data do Cadastro\n";
+
+    convidados.forEach(c => {
+      const nome = `"${c.nome}"`;
+      const acompanhantes = parseInt(c.acompanhantes || 0);
+      const total = 1 + acompanhantes;
+      const dataCadastro = `"${c.dataCadastro || 'N/A'}"`;
+      
+      csvContent += `${nome},${acompanhantes},${total},${dataCadastro}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "Lista_de_Convidados_Heloisa.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -104,26 +136,53 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
             <div className="bg-white/90 backdrop-blur-md p-4 sm:p-6 rounded-[2rem] shadow-lg border-2 border-gray-100 flex flex-col items-center flex-1 text-center relative overflow-hidden">
               <div className="absolute -top-6 -right-6 w-20 h-20 bg-green-50 rounded-full opacity-80 blur-xl"></div>
               <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-green-500 mb-2 relative z-10" />
-              <p className="text-gray-500 font-extrabold uppercase text-[10px] sm:text-xs leading-tight mb-3 relative z-10 tracking-wider">Total<br/>Nomes Confirmado</p>
+              <p className="text-gray-500 font-extrabold uppercase text-[10px] sm:text-xs leading-tight mb-3 relative z-10 tracking-wider">Total<br/>Nomes Confirmados</p>
               <h3 className="text-5xl sm:text-6xl font-extrabold text-gray-800 relative z-10">{totalTitulares}</h3>
             </div>
             
             <div className="bg-white/90 backdrop-blur-md p-4 sm:p-6 rounded-[2rem] shadow-lg border-2 border-gray-100 flex flex-col items-center flex-1 text-center relative overflow-hidden">
               <div className="absolute -top-6 -left-6 w-20 h-20 bg-gray-100 rounded-full opacity-80 blur-xl"></div>
               <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-700 mb-2 relative z-10" />
-              <p className="text-gray-500 font-extrabold uppercase text-[10px] sm:text-xs leading-tight mb-3 relative z-10 tracking-wider">Total<br/>Geral</p>
+              <p className="text-gray-500 font-extrabold uppercase text-[10px] sm:text-xs leading-tight mb-3 relative z-10 tracking-wider">Total<br/>Geral (Pessoas)</p>
               <h3 className="text-5xl sm:text-6xl font-extrabold text-gray-800 relative z-10">{totalPessoas}</h3>
             </div>
           </div>
         ) : (
           /* VISÃO DETALHADA COM LISTA */
           <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
-            {convidados.length === 0 ? (
+            
+            {/* BARRA DE PESQUISA E DOWNLOAD ADAPTADAS AO DESIGN NEUTRO */}
+            {convidados.length > 0 && (
+              <div className="flex gap-2 w-full mb-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <input 
+                    type="text" 
+                    placeholder="Procurar convidado..." 
+                    value={termoBusca}
+                    onChange={(e) => setTermoBusca(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 shadow-sm font-medium text-gray-700 placeholder-gray-400 text-sm"
+                  />
+                </div>
+                <button 
+                  onClick={exportarCSV}
+                  className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white px-5 rounded-2xl shadow-sm transition-colors font-extrabold text-sm"
+                  title="Exportar para Excel (CSV)"
+                >
+                  <Download className="w-5 h-5" />
+                  <span className="hidden sm:block uppercase tracking-wider">Baixar</span>
+                </button>
+              </div>
+            )}
+
+            {convidadosFiltrados.length === 0 ? (
               <div className="bg-white/80 backdrop-blur-md p-10 rounded-[2rem] text-center shadow-sm border-2 border-gray-200 mt-4">
-                <p className="text-gray-600 font-extrabold text-lg">Ninguém confirmou ainda 🤍</p>
+                <p className="text-gray-600 font-extrabold text-lg">
+                  {convidados.length === 0 ? "Ninguém confirmou ainda 🤍" : "Nenhum convidado encontrado na busca 🤍"}
+                </p>
               </div>
             ) : (
-              convidados.map((c) => (
+              convidadosFiltrados.map((c) => (
                 <div key={c.id} className="bg-white/95 backdrop-blur-sm p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all hover:shadow-md">
                   
                   {editandoId === c.id ? (
@@ -147,15 +206,55 @@ export default function AdminPanel({ isOpen, onClose, convidados, onDelete, onUp
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1">
+                    <div className="flex-1 flex items-center gap-3">
+                      
                       <p className="font-extrabold text-gray-800 text-lg">{c.nome}</p>
-                      <p className="text-sm text-gray-500 font-bold mt-0.5 uppercase tracking-wide">
-                        + {c.acompanhantes} acompanhante(s)
-                      </p>
+                      
+                      {/* ÍCONE COM TOOLTIP ANIMADO E INTELIGENTE */}
+                      <div 
+                        className="relative"
+                        onMouseEnter={() => setTooltipAberto(c.id)}
+                        onMouseLeave={() => setTooltipAberto(null)}
+                      >
+                        <button 
+                          onClick={() => setTooltipAberto(tooltipAberto === c.id ? null : c.id)}
+                          className="relative flex items-center justify-center bg-gray-100 w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-200 focus:outline-none transition-colors z-50 cursor-pointer"
+                        >
+                          <Users className="w-4 h-4 text-gray-500" />
+                          <span className="absolute -top-1 -right-1 bg-gray-600 text-white text-[9px] font-extrabold w-4 h-4 flex items-center justify-center rounded-full shadow-sm border border-white">
+                            {c.acompanhantes || '0'}
+                          </span>
+                        </button>
+
+                        {/* CAIXA DE DICA (Tooltip) ao clicar / hover */}
+                        {tooltipAberto === c.id && (
+                          <>
+                            {/* Overlay invisível para capturar o clique fora (Perfeito para celular) */}
+                            <div 
+                              className="fixed inset-0 z-40" 
+                              onClick={(e) => { e.stopPropagation(); setTooltipAberto(null); }}
+                            />
+
+                            <div className="absolute top-10 sm:top-0 sm:left-12 w-48 bg-gray-800 text-white text-xs rounded-xl p-3 shadow-xl z-50 animate-in fade-in zoom-in duration-200 pointer-events-none">
+                              {/* Seta direcional do Tooltip */}
+                              <div className="hidden sm:block absolute -left-1 top-3 w-3 h-3 bg-gray-800 rotate-45"></div>
+                              <div className="sm:hidden absolute -top-1 left-3 w-3 h-3 bg-gray-800 rotate-45"></div>
+                              
+                              <p className="relative z-10 font-medium leading-relaxed">
+                                {!c.acompanhantes || c.acompanhantes === '0' 
+                                  ? `${c.nome} irá sozinho(a).` 
+                                  : `Além de ${c.nome}, tem mais ${c.acompanhantes} acompanhante(s).`
+                                }
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
                     </div>
                   )}
 
-                  <div className="flex gap-2 justify-end self-end sm:self-auto">
+                  <div className="flex gap-2 justify-end self-end sm:self-auto relative z-10">
                     {editandoId === c.id ? (
                       <button onClick={() => tentarSalvar(c.id)} className="p-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-sm transition-colors flex items-center gap-2 font-bold">
                         <Save className="w-5 h-5" />

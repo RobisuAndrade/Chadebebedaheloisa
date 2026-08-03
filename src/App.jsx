@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Users, Lock, CheckCircle2 } from 'lucide-react';
+import { MapPin, Users, Lock, CheckCircle2, Sparkles, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Importações do REALTIME DATABASE
@@ -148,14 +148,27 @@ function App() {
       setListaConvidados(convidadosArray);
 
       // SE OS PAIS EXCLUÍRAM O NOME DO BANCO, LIBERA O FORMULÁRIO NOVAMENTE AQUI
+      const idSalvo = localStorage.getItem('heloisa_cha_id');
       const nomeSalvo = localStorage.getItem('heloisa_cha_nome');
-      if (nomeSalvo && data) {
-        const aindaExiste = Object.values(data).some(
-          c => c.nome.trim().toLowerCase() === nomeSalvo.trim().toLowerCase()
-        );
-        if (!aindaExiste) {
+      
+      if (data) {
+        let aindaExiste = false;
+        
+        // Verifica primeiro pelo ID (mais seguro)
+        if (idSalvo && data[idSalvo]) {
+          aindaExiste = true;
+        } 
+        // Fallback: verifica pelo nome
+        else if (nomeSalvo) {
+          aindaExiste = Object.values(data).some(
+            c => c.nome.trim().toLowerCase() === nomeSalvo.trim().toLowerCase()
+          );
+        }
+        
+        if ((idSalvo || nomeSalvo) && !aindaExiste) {
           localStorage.removeItem('heloisa_cha_nome');
           localStorage.removeItem('heloisa_cha_acomp');
+          localStorage.removeItem('heloisa_cha_id');
           setConfirmado(false);
           setNome('');
           setAcompanhantes('0');
@@ -165,10 +178,32 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // AGORA COM ATUALIZAÇÃO BLINDADA (SEM DUPLICAÇÕES)
   const confirmarPresencaFinal = async (qtdAcompanhantes) => {
     try {
-      const convidadosRef = ref(db, 'convidados');
-      await push(convidadosRef, { nome, acompanhantes: qtdAcompanhantes }); 
+      const dataAtual = new Date().toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      }).replace(',', ' às');
+
+      const idSalvo = localStorage.getItem('heloisa_cha_id');
+
+      // SE JÁ TEM UM ID SALVO, SOBRESCREVE A LINHA EXATA
+      if (idSalvo) {
+        await update(ref(db, `convidados/${idSalvo}`), {
+          nome, 
+          acompanhantes: qtdAcompanhantes, 
+          dataCadastro: dataAtual
+        });
+      } else {
+        // SE NÃO TEM ID (PRIMEIRA VEZ NO CELULAR), CRIA UMA LINHA NOVA
+        const novaRef = await push(ref(db, 'convidados'), { 
+          nome, 
+          acompanhantes: qtdAcompanhantes,
+          dataCadastro: dataAtual 
+        }); 
+        localStorage.setItem('heloisa_cha_id', novaRef.key);
+      }
       
       localStorage.setItem('heloisa_cha_nome', nome);
       localStorage.setItem('heloisa_cha_acomp', qtdAcompanhantes);
@@ -206,7 +241,7 @@ function App() {
   };
 
   const handleAddToCalendar = () => {
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:20260912T150000\nDTEND:20260912T190000\nSUMMARY:Chá de Bebê da Heloísa\nLOCATION:Chácara Juromari\nEND:VEVENT\nEND:VCALENDAR`;
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nDTSTART:20260912T130000\nDTEND:20260912T170000\nSUMMARY:Chá de Bebê da Heloísa\nLOCATION:Estr. Francisco Carlos de Castro Neves, 798 - Triângulo Azul, São Lourenço da Serra - SP\nEND:VEVENT\nEND:VCALENDAR`;
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -217,10 +252,9 @@ function App() {
     document.body.removeChild(link);
   };
 
-  const lat = "-23.801970319614995";
-  const lng = "-46.93541569510455";
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-  const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+  const enderecoConvite = "Estr. Francisco Carlos de Castro Neves, 798 - Triângulo Azul, São Lourenço da Serra - SP, 06890-000";
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(enderecoConvite)}`;
+  const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(enderecoConvite)}&navigate=yes`;
 
   const abrirConfirmacaoRota = (url, nomeApp) => {
     setDadosRota({ url, nomeApp });
@@ -293,14 +327,14 @@ function App() {
           >
             <img src="/calendario.png" alt="Calendário" className="w-5 h-5 object-contain opacity-80" />
             
-            <div className="relative h-5 w-[140px] flex items-center justify-center overflow-hidden">
+            <div className="relative h-5 w-[190px] flex items-center justify-center overflow-hidden">
               <motion.span
                 initial={false}
                 animate={{ y: mostrarDataCalendario ? 0 : -30, opacity: mostrarDataCalendario ? 1 : 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="absolute font-extrabold uppercase tracking-widest text-[13px] text-[#8b739e] whitespace-nowrap"
+                className="absolute font-extrabold uppercase tracking-widest text-[12px] sm:text-[13px] text-[#8b739e] whitespace-nowrap"
               >
-                12 de Setembro
+                12 de Setembro às 13h
               </motion.span>
               <motion.span
                 initial={false}
@@ -314,7 +348,7 @@ function App() {
           </button>
 
           {/* ========================================================= */}
-          {/* 2. FORMULÁRIO DE PRESENÇA */}
+          {/* 2. FORMULÁRIO DE PRESENÇA (Status Confirmado Atualizado) */}
           {/* ========================================================= */}
           <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#8b5cf6]/5 border border-[#e9d5ff] flex flex-col items-center relative mt-2">
             
@@ -338,57 +372,109 @@ function App() {
               Sua Presença
             </div>
 
-            <p className="text-center text-[10px] sm:text-xs text-[#9d7bb0] font-bold mt-3 mb-6 uppercase tracking-wider">
-              Por favor, confirme para organizarmos tudo com carinho 💜
-            </p>
-
+            {/* SE JÁ CONFIRMOU: MOSTRA O CARD COM ESTRELAS ANIMADAS E LÁPIS */}
             {confirmado ? (
-              <div className="bg-[#fdfbf6] border border-[#d8b4fe] text-[#9333ea] p-6 rounded-2xl text-center flex flex-col items-center gap-3 w-full shadow-sm animate-fade-in">
-                <CheckCircle2 className="w-12 h-12 text-[#b28fc4]" />
-                <span className="font-bold">Presença já confirmada para {nome} {acompanhantes !== '0' ? `(+${acompanhantes} acompanhante(s))` : ''}! ✨</span>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+              <div className="w-full flex flex-col items-center gap-4 animate-in fade-in mt-2 mb-2">
                 
-                <div className="flex gap-2 w-full items-end">
-                  <div className="flex flex-col gap-1.5 flex-1 text-left">
-                    <label htmlFor="nome_convidado" className="text-[10px] font-bold text-[#9d7bb0] uppercase ml-1">
-                      Seu Nome Completo
-                    </label>
-                    <input 
-                      id="nome_convidado" 
-                      type="text" 
-                      placeholder="Digite seu nome aqui" 
-                      required
-                      enterKeyHint="done"
-                      className="p-4 border border-[#e3d5e8] rounded-2xl text-sm focus:outline-none focus:border-[#9d7bb0] focus:ring-2 focus:ring-[#f3e8ff] bg-white/90 text-gray-700 w-full placeholder-gray-400 shadow-sm"
-                      value={nome} 
-                      onChange={(e) => setNome(e.target.value)}
-                    />
-                  </div>
-                  
-                  <button
-                    type="button" 
-                    onClick={() => {
-                      if (document.activeElement) document.activeElement.blur();
-                      setFluxoAutoSubmit(false);
-                      abrirModalComHistorico(setModalAcompanhantesAberto);
-                    }}
-                    className="relative h-[54px] w-[54px] shrink-0 bg-white/90 border border-dashed border-[#d8b4fe] rounded-2xl text-[#9333ea] flex items-center justify-center transition-colors hover:bg-[#faf5ff] shadow-sm"
-                  >
-                    <Users className="w-6 h-6 opacity-80" />
-                    {acompanhantes !== '0' && (
-                      <span className="absolute -top-2 -right-2 bg-[#b28fc4] text-white text-[11px] font-extrabold w-6 h-6 flex items-center justify-center rounded-full shadow-md border-2 border-white">
-                        +{acompanhantes}
-                      </span>
-                    )}
-                  </button>
+                <div className="bg-[#f3e8ff] p-4 rounded-full shadow-inner border border-[#e9d5ff]">
+                  <CheckCircle2 className="w-10 h-10 text-[#a385bc]" />
                 </div>
                 
-                <button type="submit" className="w-full bg-[#a385bc] hover:bg-[#8e68ab] text-white font-extrabold py-4 rounded-2xl text-sm mt-1 transition-colors shadow-md uppercase tracking-wider">
-                  Confirmar Agora
-                </button>
-              </form>
+                <div className="text-center w-full flex flex-col items-center">
+                  <p className="text-[11px] font-extrabold text-[#9d7bb0] uppercase tracking-widest mb-3">
+                    Presença Confirmada
+                  </p>
+                  
+                  {/* NOME COM ESTRELAS E BOTÃO EDITAR */}
+                  <div className="relative inline-flex items-center justify-center py-2 px-8">
+                    <motion.div
+                      animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute top-0 left-0 text-[#d8b4fe]"
+                    >
+                      <Sparkles className="w-5 h-5" />
+                    </motion.div>
+
+                    <div className="flex items-center gap-3 relative z-10">
+                      <h4 className="text-2xl sm:text-3xl font-extrabold text-[#8b5cf6] break-words leading-tight drop-shadow-sm text-center">
+                        {nome}
+                      </h4>
+                      <button 
+                        onClick={() => setConfirmado(false)}
+                        className="p-1.5 bg-white border border-[#e3d5e8] rounded-full text-[#8b5cf6] hover:bg-[#faf5ff] hover:scale-105 transition-all shadow-sm"
+                        title="Editar Presença"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    <motion.div
+                      animate={{ rotate: [0, -15, 15, 0], scale: [1, 1.3, 1] }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                      className="absolute bottom-0 right-0 text-[#a385bc]"
+                    >
+                      <Sparkles className="w-6 h-6" />
+                    </motion.div>
+                  </div>
+                  
+                  {/* ACOMPANHANTES (SE HOUVER) */}
+                  {acompanhantes !== '0' && (
+                    <div className="inline-flex items-center justify-center gap-1.5 bg-[#faf5ff] border border-[#e9d5ff] px-4 py-2 rounded-full mt-4 shadow-sm">
+                      <Users className="w-4 h-4 text-[#a385bc]" />
+                      <span className="text-xs font-bold text-[#8b739e] uppercase tracking-wider">+{acompanhantes} acompanhante(s)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // SE NÃO CONFIRMOU (OU CLICOU NO LÁPIS): MOSTRA O FORMULÁRIO
+              <>
+                <p className="text-center text-[10px] sm:text-xs text-[#9d7bb0] font-bold mt-3 mb-6 uppercase tracking-wider">
+                  Por favor, confirme para organizarmos tudo com carinho 💜
+                </p>
+
+                <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
+                  
+                  <div className="flex gap-2 w-full items-end">
+                    <div className="flex flex-col gap-1.5 flex-1 text-left">
+                      <label htmlFor="nome_convidado" className="text-[10px] font-bold text-[#9d7bb0] uppercase ml-1">
+                        Seu Nome Completo
+                      </label>
+                      <input 
+                        id="nome_convidado" 
+                        type="text" 
+                        placeholder="Digite seu nome aqui" 
+                        required
+                        enterKeyHint="done"
+                        className="p-4 border border-[#e3d5e8] rounded-2xl text-sm focus:outline-none focus:border-[#9d7bb0] focus:ring-2 focus:ring-[#f3e8ff] bg-white/90 text-gray-700 w-full placeholder-gray-400 shadow-sm"
+                        value={nome} 
+                        onChange={(e) => setNome(e.target.value)}
+                      />
+                    </div>
+                    
+                    <button
+                      type="button" 
+                      onClick={() => {
+                        if (document.activeElement) document.activeElement.blur();
+                        setFluxoAutoSubmit(false);
+                        abrirModalComHistorico(setModalAcompanhantesAberto);
+                      }}
+                      className="relative h-[54px] w-[54px] shrink-0 bg-white/90 border border-dashed border-[#d8b4fe] rounded-2xl text-[#9333ea] flex items-center justify-center transition-colors hover:bg-[#faf5ff] shadow-sm"
+                    >
+                      <Users className="w-6 h-6 opacity-80" />
+                      {acompanhantes !== '0' && (
+                        <span className="absolute -top-2 -right-2 bg-[#b28fc4] text-white text-[11px] font-extrabold w-6 h-6 flex items-center justify-center rounded-full shadow-md border-2 border-white">
+                          +{acompanhantes}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                  
+                  <button type="submit" className="w-full bg-[#a385bc] hover:bg-[#8e68ab] text-white font-extrabold py-4 rounded-2xl text-sm mt-1 transition-colors shadow-md uppercase tracking-wider">
+                    Confirmar Agora
+                  </button>
+                </form>
+              </>
             )}
           </div>
 
