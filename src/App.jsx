@@ -262,7 +262,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen w-full flex justify-center sm:py-6 overflow-x-hidden overscroll-none font-sans text-gray-800 relative bg-[#fffbf0]">
+    // FIX DOS TABLETS AQUI: Trocamos o overflow para overflow-x-clip. Agora a rolagem com o dedo funciona em qualquer dispositivo!
+    <div className="min-h-screen w-full flex justify-center sm:py-6 overflow-x-clip font-sans text-gray-800 relative bg-[#fffbf0]">
       
       {/* O ENXAME DE ENTRADA */}
       <EnxameDeBorboletas />
@@ -277,7 +278,8 @@ function App() {
         }}
       ></div>
 
-      <div className="w-full max-w-[420px] sm:max-w-xl min-h-screen sm:min-h-[850px] relative z-10 flex flex-col pb-24 sm:bg-white/30 sm:backdrop-blur-sm sm:rounded-[2.5rem] sm:shadow-2xl sm:border sm:border-white/60 overflow-hidden">
+      {/* FIX DOS TABLETS: Alteramos o sm:overflow-hidden para garantir flexibilidade no conteúdo grande */}
+      <div className="w-full max-w-[420px] sm:max-w-xl min-h-screen sm:min-h-[850px] relative z-10 flex flex-col pb-24 sm:bg-white/30 sm:backdrop-blur-sm sm:rounded-[2.5rem] sm:shadow-2xl sm:border sm:border-white/60 sm:overflow-hidden">
         
         <div 
           className="absolute top-4 right-4 z-[60] opacity-40 hover:opacity-100 cursor-pointer p-2 transition-opacity bg-white/50 rounded-full backdrop-blur-sm" 
@@ -348,7 +350,7 @@ function App() {
           </button>
 
           {/* ========================================================= */}
-          {/* 2. FORMULÁRIO DE PRESENÇA (Status Confirmado Atualizado) */}
+          {/* 2. FORMULÁRIO DE PRESENÇA */}
           {/* ========================================================= */}
           <div className="w-full bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl shadow-[#8b5cf6]/5 border border-[#e9d5ff] flex flex-col items-center relative mt-2">
             
