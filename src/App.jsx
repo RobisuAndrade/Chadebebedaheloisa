@@ -252,7 +252,7 @@ function App() {
     document.body.removeChild(link);
   };
 
-  const enderecoConvite = "Estr. Francisco Carlos de Castro Neves, 798 - Triângulo Azul, São Lourenço da Serra - SP, 06890-000";
+  const enderecoConvite = "Rua Lira Cearense, 348 - Parque Arariba, São Paulo - SP, 05763-450";
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(enderecoConvite)}`;
   const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(enderecoConvite)}&navigate=yes`;
 
@@ -509,7 +509,7 @@ function App() {
               </h2>
               
               <h3 className="font-semibold text-[#7a8b6c] text-sm sm:text-base mb-5 relative z-10">
-                Chácara Juromari
+                Condomínio Módulo 2
               </h3>
               
               <div className="flex flex-row gap-3 w-full relative z-10 mb-4">
