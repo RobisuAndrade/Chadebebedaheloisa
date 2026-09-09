@@ -28,7 +28,7 @@ export default function RotaModal({ isOpen, onClose, urlDestino, nomeApp }) {
         
         <div className="p-8 text-center">
           <p className="text-gray-600 mb-8 font-medium text-sm leading-relaxed">
-            Deseja sair do convite e abrir o <strong className="text-[#8b5cf6]">{nomeApp}</strong> para navegar até a Chácara Juromari?
+            Deseja sair do convite e abrir o <strong className="text-[#8b5cf6]">{nomeApp}</strong> para navegar até a Condomínio Módulo 2?
           </p>
           
           <div className="flex gap-3">
